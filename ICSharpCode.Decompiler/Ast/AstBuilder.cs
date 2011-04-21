@@ -198,7 +198,7 @@ namespace ICSharpCode.Decompiler.Ast
 			ConvertAttributes(astType, typeDef);
 			astType.AddAnnotation(typeDef);
 			astType.Modifiers = ConvertModifiers(typeDef);
-			astType.Name = CleanName(typeDef.Name);
+			astType.Name = AstHumanReadable.MakeReadable(typeDef, CleanName(typeDef.Name), null);
 			
 			if (typeDef.IsEnum) {  // NB: Enum is value type
 				astType.ClassType = ClassType.Enum;
@@ -356,7 +356,7 @@ namespace ICSharpCode.Decompiler.Ast
 				ApplyTypeArgumentsTo(baseType, typeArguments);
 				return baseType;
 			} else if (type is GenericParameter) {
-				return new SimpleType(type.Name);
+                return new SimpleType(AstHumanReadable.MakeReadable(type, type.Name, "T"));
 			} else if (type.IsNested) {
 				AstType typeRef = ConvertType(type.DeclaringType, typeAttributes, ref typeIndex, options & ~ConvertTypeOptions.IncludeTypeParameterDefinitions);
 				string namepart = ICSharpCode.NRefactory.TypeSystem.ReflectionHelper.SplitTypeParameterCountFromReflectionName(type.Name);
@@ -368,7 +368,8 @@ namespace ICSharpCode.Decompiler.Ast
 				return memberType;
 			} else {
 				string ns = type.Namespace ?? string.Empty;
-				string name = type.Name;
+                ns = AstHumanReadable.MakeReadable(type, ns, "ns");
+				string name = AstHumanReadable.MakeReadable(type, type.Name, null);
 				if (name == null)
 					throw new InvalidOperationException("type.Name returned null. Type: " + type.ToString());
 				
@@ -617,7 +618,7 @@ namespace ICSharpCode.Decompiler.Ast
 			MethodDeclaration astMethod = new MethodDeclaration();
 			astMethod.AddAnnotation(methodDef);
 			astMethod.ReturnType = ConvertType(methodDef.ReturnType, methodDef.MethodReturnType);
-			astMethod.Name = CleanName(methodDef.Name);
+			astMethod.Name = AstHumanReadable.MakeReadable(methodDef, CleanName(methodDef.Name), "method");
 			astMethod.TypeParameters.AddRange(MakeTypeParameters(methodDef.GenericParameters));
 			astMethod.Parameters.AddRange(MakeParameters(methodDef));
 			astMethod.Constraints.AddRange(MakeConstraints(methodDef.GenericParameters));

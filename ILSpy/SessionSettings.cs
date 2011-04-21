@@ -43,7 +43,7 @@ namespace ICSharpCode.ILSpy
 			
 			XElement activeTreeViewPath = doc.Element("ActiveTreeViewPath");
 			if (activeTreeViewPath != null) {
-				this.ActiveTreeViewPath = activeTreeViewPath.Elements().Select(e => (string)e).ToArray();
+				this.ActiveTreeViewPath = activeTreeViewPath.Elements().Select(e => Uri.UnescapeDataString((string)e)).ToArray();
 			}
 			
 			this.WindowState = FromString((string)doc.Element("WindowState"), WindowState.Normal);
@@ -78,8 +78,9 @@ namespace ICSharpCode.ILSpy
 			if (this.ActiveAssemblyList != null) {
 				doc.Add(new XElement("ActiveAssemblyList", this.ActiveAssemblyList));
 			}
-			if (this.ActiveTreeViewPath != null) {
-				doc.Add(new XElement("ActiveTreeViewPath", ActiveTreeViewPath.Select(p => new XElement("Node", p))));
+			if (this.ActiveTreeViewPath != null) 
+            {                
+				doc.Add(new XElement("ActiveTreeViewPath", ActiveTreeViewPath.Select(p => new XElement("Node", Uri.EscapeDataString(p)))));
 			}
 			doc.Add(new XElement("WindowState", ToString(this.WindowState)));
 			doc.Add(new XElement("WindowBounds", ToString(this.WindowBounds)));

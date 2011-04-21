@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ICSharpCode.NRefactory.CSharp
 {
@@ -103,12 +104,15 @@ namespace ICSharpCode.NRefactory.CSharp
 			return new ComposedType { BaseType = this, HasNullableSpecifier = true };
 		}
 		
+
+
 		/// <summary>
 		/// Builds an expression that can be used to access a static member on this type.
 		/// </summary>
 		public MemberReferenceExpression Member(string memberName)
 		{
-			return new TypeReferenceExpression { Type = this }.Member(memberName);
+
+			return new TypeReferenceExpression { Type = this }.Member(AstHumanReadable.MakeReadable(this, memberName));
 		}
 		
 		/// <summary>
@@ -169,6 +173,7 @@ namespace ICSharpCode.NRefactory.CSharp
 				case TypeCode.String:
 					return new PrimitiveType("string");
 			}
+
 			return new SimpleType(type.FullName); // TODO: implement this correctly
 		}
 	}
