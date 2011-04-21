@@ -247,7 +247,7 @@ namespace ICSharpCode.Decompiler.Ast
 						}
 					} else {
 						EnumMemberDeclaration enumMember = new EnumMemberDeclaration();
-						enumMember.Name = CleanName(field.Name);
+						enumMember.Name = AstHumanReadable.MakeReadable(field, CleanName(field.Name), "field");
 						long memberValue = (long)CSharpPrimitiveCast.Cast(TypeCode.Int64, field.Constant, false);
 						if (forcePrintingInitializers || memberValue != expectedEnumMemberValue) {
 							enumMember.AddChild(new PrimitiveExpression(field.Constant), EnumMemberDeclaration.InitializerRole);
@@ -683,7 +683,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			foreach (var gp in genericParameters) {
 				TypeParameterDeclaration tp = new TypeParameterDeclaration();
-				tp.Name = CleanName(gp.Name);
+				tp.Name = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), "T");
 				if (gp.IsContravariant)
 					tp.Variance = VarianceModifier.Contravariant;
 				else if (gp.IsCovariant)
@@ -697,7 +697,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			foreach (var gp in genericParameters) {
 				Constraint c = new Constraint();
-				c.TypeParameter = CleanName(gp.Name);
+                c.TypeParameter = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), "T");
 				// class/struct must be first
 				if (gp.HasReferenceTypeConstraint)
 					c.BaseTypes.Add(new PrimitiveType("class"));
@@ -729,7 +729,7 @@ namespace ICSharpCode.Decompiler.Ast
 				// don't show visibility for static ctors
 				astMethod.Modifiers &= ~Modifiers.VisibilityMask;
 			}
-			astMethod.Name = CleanName(methodDef.DeclaringType.Name);
+			astMethod.Name = AstHumanReadable.MakeReadable(methodDef.DeclaringType, CleanName(methodDef.DeclaringType.Name), string.Empty);
 			astMethod.Parameters.AddRange(MakeParameters(methodDef));
 			astMethod.Body = CreateMethodBody(methodDef, astMethod.Parameters);
 			ConvertAttributes(astMethod, methodDef);
@@ -783,7 +783,7 @@ namespace ICSharpCode.Decompiler.Ast
 					// TODO: add some kind of notification (a comment?) about possible problems with decompiled code due to unresolved references.
 				}
 			}
-			astProp.Name = CleanName(propDef.Name);
+			astProp.Name = AstHumanReadable.MakeReadable(propDef, CleanName(propDef.Name), "property");
 			astProp.ReturnType = ConvertType(propDef.PropertyType, propDef);
 			if (propDef.GetMethod != null) {
 				// Create mapping - used in debugger
@@ -844,7 +844,7 @@ namespace ICSharpCode.Decompiler.Ast
 				EventDeclaration astEvent = new EventDeclaration();
 				ConvertCustomAttributes(astEvent, eventDef);
 				astEvent.AddAnnotation(eventDef);
-				astEvent.Variables.Add(new VariableInitializer(CleanName(eventDef.Name)));
+				astEvent.Variables.Add(new VariableInitializer(AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), "event")));
 				astEvent.ReturnType = ConvertType(eventDef.EventType, eventDef);
 				if (!eventDef.DeclaringType.IsInterface)
 					astEvent.Modifiers = ConvertModifiers(eventDef.AddMethod);
@@ -853,7 +853,7 @@ namespace ICSharpCode.Decompiler.Ast
 				CustomEventDeclaration astEvent = new CustomEventDeclaration();
 				ConvertCustomAttributes(astEvent, eventDef);
 				astEvent.AddAnnotation(eventDef);
-				astEvent.Name = CleanName(eventDef.Name);
+				astEvent.Name = AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), "event");
 				astEvent.ReturnType = ConvertType(eventDef.EventType, eventDef);
 				if (eventDef.AddMethod == null || !eventDef.AddMethod.HasOverrides)
 					astEvent.Modifiers = ConvertModifiers(eventDef.AddMethod);
@@ -899,7 +899,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			FieldDeclaration astField = new FieldDeclaration();
 			astField.AddAnnotation(fieldDef);
-			VariableInitializer initializer = new VariableInitializer(CleanName(fieldDef.Name));
+			VariableInitializer initializer = new VariableInitializer(AstHumanReadable.MakeReadable(fieldDef, CleanName(fieldDef.Name), "field"));
 			astField.AddChild(initializer, FieldDeclaration.Roles.Variable);
 			astField.ReturnType = ConvertType(fieldDef.FieldType, fieldDef);
 			astField.Modifiers = ConvertModifiers(fieldDef);
@@ -936,7 +936,7 @@ namespace ICSharpCode.Decompiler.Ast
 				astParam.AddAnnotation(paramDef);
 				if (!(isLambda && paramDef.ParameterType.ContainsAnonymousType()))
 					astParam.Type = ConvertType(paramDef.ParameterType, paramDef);
-				astParam.Name = paramDef.Name;
+				astParam.Name = AstHumanReadable.MakeReadable(paramDef, paramDef.Name, "parameter");
 				
 				if (paramDef.ParameterType is ByReferenceType) {
 					astParam.ParameterModifier = (!paramDef.IsIn && paramDef.IsOut) ? ParameterModifier.Out : ParameterModifier.Ref;
@@ -1288,7 +1288,7 @@ namespace ICSharpCode.Decompiler.Ast
 				if (enumDefinition != null && enumDefinition.IsEnum) {
 					foreach (FieldDefinition field in enumDefinition.Fields) {
 						if (field.IsStatic && object.Equals(CSharpPrimitiveCast.Cast(TypeCode.Int64, field.Constant, false), val))
-							return ConvertType(enumDefinition).Member(field.Name).WithAnnotation(field);
+							return ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, "field")).WithAnnotation(field);
 						else if (!field.IsStatic && field.IsRuntimeSpecialName)
 							type = field.FieldType; // use primitive type of the enum
 					}
@@ -1319,7 +1319,7 @@ namespace ICSharpCode.Decompiler.Ast
 								continue;	// skip None enum value
 
 							if ((fieldValue & enumValue) == fieldValue) {
-								var fieldExpression = ConvertType(enumDefinition).Member(field.Name).WithAnnotation(field);
+								var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, "field")).WithAnnotation(field);
 								if (expr == null)
 									expr = fieldExpression;
 								else
@@ -1328,7 +1328,7 @@ namespace ICSharpCode.Decompiler.Ast
 								enumValue &= ~fieldValue;
 							}
 							if ((fieldValue & negatedEnumValue) == fieldValue) {
-								var fieldExpression = ConvertType(enumDefinition).Member(field.Name).WithAnnotation(field);
+                                var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, "field")).WithAnnotation(field);
 								if (negatedExpr == null)
 									negatedExpr = fieldExpression;
 								else

@@ -556,29 +556,37 @@ namespace ICSharpCode.Decompiler.Ast
 				case ILCode.Ldc_Decimal:
 					return new Ast.PrimitiveExpression(operand);
 				case ILCode.Ldfld:
+                    var fi = (FieldReference)operand;
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-					return arg1.Member(((FieldReference) operand).Name).WithAnnotation(operand);
+					return arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand);
 				case ILCode.Ldsfld:
-					return AstBuilder.ConvertType(((FieldReference)operand).DeclaringType)
-						.Member(((FieldReference)operand).Name).WithAnnotation(operand);
+                    fi = (FieldReference)operand;
+					return AstBuilder.ConvertType(fi.DeclaringType)
+						.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand);
 				case ILCode.Stfld:
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-					return new AssignmentExpression(arg1.Member(((FieldReference) operand).Name).WithAnnotation(operand), arg2);
+                    fi = (FieldReference)operand;
+					return new AssignmentExpression(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand), arg2);
 				case ILCode.Stsfld:
+                    fi = (FieldReference)operand;
+
 					return new AssignmentExpression(
-						AstBuilder.ConvertType(((FieldReference)operand).DeclaringType)
-						.Member(((FieldReference)operand).Name).WithAnnotation(operand),
+						AstBuilder.ConvertType(fi.DeclaringType)
+						.Member(AstHumanReadable.MakeReadable(fi,fi.Name, "field")).WithAnnotation(operand),
 						arg1);
 				case ILCode.Ldflda:
+                    fi = (FieldReference)operand;
+
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-					return MakeRef(arg1.Member(((FieldReference) operand).Name).WithAnnotation(operand));
+					return MakeRef(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand));
 				case ILCode.Ldsflda:
+                    fi = (FieldReference)operand;
 					return MakeRef(
-						AstBuilder.ConvertType(((FieldReference)operand).DeclaringType)
-						.Member(((FieldReference)operand).Name).WithAnnotation(operand));
+						AstBuilder.ConvertType(fi.DeclaringType)
+						.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand));
 					case ILCode.Ldloc: {
 						ILVariable v = (ILVariable)operand;
 						if (!v.IsParameter)
@@ -891,7 +899,7 @@ namespace ICSharpCode.Decompiler.Ast
 			}
 			// Default invocation
 			AdjustArgumentsForMethodCall(cecilMethodDef ?? cecilMethod, methodArgs);
-			return target.Invoke(cecilMethod.Name, ConvertTypeArguments(cecilMethod), methodArgs).WithAnnotation(cecilMethod);
+			return target.Invoke(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, "method"), ConvertTypeArguments(cecilMethod), methodArgs).WithAnnotation(cecilMethod);
 		}
 		
 		static void AdjustArgumentsForMethodCall(MethodReference cecilMethod, List<Expression> methodArgs)

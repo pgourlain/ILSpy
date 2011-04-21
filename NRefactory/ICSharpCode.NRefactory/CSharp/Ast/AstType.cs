@@ -112,7 +112,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		public MemberReferenceExpression Member(string memberName)
 		{
 
-			return new TypeReferenceExpression { Type = this }.Member(AstHumanReadable.MakeReadable(this, memberName));
+			return new TypeReferenceExpression { Type = this }.Member(memberName);
 		}
 		
 		/// <summary>
