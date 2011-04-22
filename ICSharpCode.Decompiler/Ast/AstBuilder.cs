@@ -370,6 +370,7 @@ namespace ICSharpCode.Decompiler.Ast
 			} else if (type.IsNested) {
 				AstType typeRef = ConvertType(type.DeclaringType, typeAttributes, ref typeIndex, options & ~ConvertTypeOptions.IncludeTypeParameterDefinitions);
 				string namepart = ICSharpCode.NRefactory.TypeSystem.ReflectionHelper.SplitTypeParameterCountFromReflectionName(type.Name);
+                namepart = AstHumanReadable.MakeReadable(type, namepart, "nestedtype");
 				MemberType memberType = new MemberType { Target = typeRef, MemberName = namepart };
 				memberType.AddAnnotation(type);
 				if ((options & ConvertTypeOptions.IncludeTypeParameterDefinitions) == ConvertTypeOptions.IncludeTypeParameterDefinitions) {
