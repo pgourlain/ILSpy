@@ -160,7 +160,7 @@ namespace ICSharpCode.Decompiler.Ast
 		public void AddType(TypeDefinition typeDef)
 		{
 			var astType = CreateType(typeDef);
-			NamespaceDeclaration astNS = GetCodeNamespace(AstHumanReadable.MakeReadable(typeDef, typeDef.Namespace, "namespace"));
+            NamespaceDeclaration astNS = GetCodeNamespace(AstHumanReadable.MakeReadable(typeDef, typeDef.Namespace, AstHumanReadable.Namespace));
 			if (astNS != null) {
 				astNS.AddChild(astType, NamespaceDeclaration.MemberRole);
 			} else {
@@ -207,7 +207,7 @@ namespace ICSharpCode.Decompiler.Ast
 			ConvertAttributes(astType, typeDef);
 			astType.AddAnnotation(typeDef);
 			astType.Modifiers = ConvertModifiers(typeDef);
-			astType.Name = AstHumanReadable.MakeReadable(typeDef, CleanName(typeDef.Name), null);
+            astType.Name = AstHumanReadable.MakeReadable(typeDef, CleanName(typeDef.Name), AstHumanReadable.Type);
 			
 			if (typeDef.IsEnum) {  // NB: Enum is value type
 				astType.ClassType = ClassType.Enum;
@@ -247,7 +247,7 @@ namespace ICSharpCode.Decompiler.Ast
 						}
 					} else {
 						EnumMemberDeclaration enumMember = new EnumMemberDeclaration();
-						enumMember.Name = AstHumanReadable.MakeReadable(field, CleanName(field.Name), "field");
+						enumMember.Name = AstHumanReadable.MakeReadable(field, CleanName(field.Name), AstHumanReadable.Field);
 						long memberValue = (long)CSharpPrimitiveCast.Cast(TypeCode.Int64, field.Constant, false);
 						if (forcePrintingInitializers || memberValue != expectedEnumMemberValue) {
 							enumMember.AddChild(new PrimitiveExpression(field.Constant), EnumMemberDeclaration.InitializerRole);
@@ -366,11 +366,11 @@ namespace ICSharpCode.Decompiler.Ast
 				ApplyTypeArgumentsTo(baseType, typeArguments);
 				return baseType;
 			} else if (type is GenericParameter) {
-                return new SimpleType(AstHumanReadable.MakeReadable(type, type.Name, "T"));
+                return new SimpleType(AstHumanReadable.MakeReadable(type, type.Name, AstHumanReadable.GenericType));
 			} else if (type.IsNested) {
 				AstType typeRef = ConvertType(type.DeclaringType, typeAttributes, ref typeIndex, options & ~ConvertTypeOptions.IncludeTypeParameterDefinitions);
 				string namepart = ICSharpCode.NRefactory.TypeSystem.ReflectionHelper.SplitTypeParameterCountFromReflectionName(type.Name);
-                namepart = AstHumanReadable.MakeReadable(type, namepart, "nestedtype");
+                namepart = AstHumanReadable.MakeReadable(type, namepart, AstHumanReadable.NestedType);
 				MemberType memberType = new MemberType { Target = typeRef, MemberName = namepart };
 				memberType.AddAnnotation(type);
 				if ((options & ConvertTypeOptions.IncludeTypeParameterDefinitions) == ConvertTypeOptions.IncludeTypeParameterDefinitions) {
@@ -379,7 +379,7 @@ namespace ICSharpCode.Decompiler.Ast
 				return memberType;
 			} else {
 				string ns = type.Namespace ?? string.Empty;
-                ns = AstHumanReadable.MakeReadable(type, ns, "namespace");
+                ns = AstHumanReadable.MakeReadable(type, ns, AstHumanReadable.Namespace);
 				string name = AstHumanReadable.MakeReadable(type, type.Name, null);
 				if (name == null)
 					throw new InvalidOperationException("type.Name returned null. Type: " + type.ToString());
@@ -452,7 +452,7 @@ namespace ICSharpCode.Decompiler.Ast
 			if (type.HasGenericParameters) {
 				List<AstType> typeArguments = new List<AstType>();
 				foreach (GenericParameter gp in type.GenericParameters) {
-					typeArguments.Add(new SimpleType(AstHumanReadable.MakeReadable(gp, gp.Name, "T")));
+                    typeArguments.Add(new SimpleType(AstHumanReadable.MakeReadable(gp, gp.Name, AstHumanReadable.GenericType)));
 				}
 				ApplyTypeArgumentsTo(astType, typeArguments);
 			}
@@ -632,7 +632,7 @@ namespace ICSharpCode.Decompiler.Ast
 			MethodDeclaration astMethod = new MethodDeclaration();
 			astMethod.AddAnnotation(methodDef);
 			astMethod.ReturnType = ConvertType(methodDef.ReturnType, methodDef.MethodReturnType);
-			astMethod.Name = AstHumanReadable.MakeReadable(methodDef, CleanName(methodDef.Name), "method");
+			astMethod.Name = AstHumanReadable.MakeReadable(methodDef, CleanName(methodDef.Name), AstHumanReadable.Method);
 			astMethod.TypeParameters.AddRange(MakeTypeParameters(methodDef.GenericParameters));
 			astMethod.Parameters.AddRange(MakeParameters(methodDef));
 			astMethod.Constraints.AddRange(MakeConstraints(methodDef.GenericParameters));
@@ -684,7 +684,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			foreach (var gp in genericParameters) {
 				TypeParameterDeclaration tp = new TypeParameterDeclaration();
-				tp.Name = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), "T");
+                tp.Name = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), AstHumanReadable.GenericType);
 				if (gp.IsContravariant)
 					tp.Variance = VarianceModifier.Contravariant;
 				else if (gp.IsCovariant)
@@ -698,7 +698,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			foreach (var gp in genericParameters) {
 				Constraint c = new Constraint();
-                c.TypeParameter = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), "T");
+                c.TypeParameter = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), AstHumanReadable.GenericType);
 				// class/struct must be first
 				if (gp.HasReferenceTypeConstraint)
 					c.BaseTypes.Add(new PrimitiveType("class"));
@@ -730,7 +730,7 @@ namespace ICSharpCode.Decompiler.Ast
 				// don't show visibility for static ctors
 				astMethod.Modifiers &= ~Modifiers.VisibilityMask;
 			}
-			astMethod.Name = AstHumanReadable.MakeReadable(methodDef.DeclaringType, CleanName(methodDef.DeclaringType.Name), string.Empty);
+			astMethod.Name = AstHumanReadable.MakeReadable(methodDef.DeclaringType, CleanName(methodDef.DeclaringType.Name), AstHumanReadable.Type);
 			astMethod.Parameters.AddRange(MakeParameters(methodDef));
 			astMethod.Body = CreateMethodBody(methodDef, astMethod.Parameters);
 			ConvertAttributes(astMethod, methodDef);
@@ -784,7 +784,7 @@ namespace ICSharpCode.Decompiler.Ast
 					// TODO: add some kind of notification (a comment?) about possible problems with decompiled code due to unresolved references.
 				}
 			}
-			astProp.Name = AstHumanReadable.MakeReadable(propDef, CleanName(propDef.Name), "property");
+			astProp.Name = AstHumanReadable.MakeReadable(propDef, CleanName(propDef.Name), AstHumanReadable.Property);
 			astProp.ReturnType = ConvertType(propDef.PropertyType, propDef);
 			if (propDef.GetMethod != null) {
 				// Create mapping - used in debugger
@@ -845,7 +845,7 @@ namespace ICSharpCode.Decompiler.Ast
 				EventDeclaration astEvent = new EventDeclaration();
 				ConvertCustomAttributes(astEvent, eventDef);
 				astEvent.AddAnnotation(eventDef);
-				astEvent.Variables.Add(new VariableInitializer(AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), "event")));
+                astEvent.Variables.Add(new VariableInitializer(AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), AstHumanReadable.Event)));
 				astEvent.ReturnType = ConvertType(eventDef.EventType, eventDef);
 				if (!eventDef.DeclaringType.IsInterface)
 					astEvent.Modifiers = ConvertModifiers(eventDef.AddMethod);
@@ -854,7 +854,7 @@ namespace ICSharpCode.Decompiler.Ast
 				CustomEventDeclaration astEvent = new CustomEventDeclaration();
 				ConvertCustomAttributes(astEvent, eventDef);
 				astEvent.AddAnnotation(eventDef);
-				astEvent.Name = AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), "event");
+                astEvent.Name = AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), AstHumanReadable.Event);
 				astEvent.ReturnType = ConvertType(eventDef.EventType, eventDef);
 				if (eventDef.AddMethod == null || !eventDef.AddMethod.HasOverrides)
 					astEvent.Modifiers = ConvertModifiers(eventDef.AddMethod);
@@ -900,7 +900,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			FieldDeclaration astField = new FieldDeclaration();
 			astField.AddAnnotation(fieldDef);
-			VariableInitializer initializer = new VariableInitializer(AstHumanReadable.MakeReadable(fieldDef, CleanName(fieldDef.Name), "field"));
+            VariableInitializer initializer = new VariableInitializer(AstHumanReadable.MakeReadable(fieldDef, CleanName(fieldDef.Name), AstHumanReadable.Field));
 			astField.AddChild(initializer, FieldDeclaration.Roles.Variable);
 			astField.ReturnType = ConvertType(fieldDef.FieldType, fieldDef);
 			astField.Modifiers = ConvertModifiers(fieldDef);
@@ -937,7 +937,7 @@ namespace ICSharpCode.Decompiler.Ast
 				astParam.AddAnnotation(paramDef);
 				if (!(isLambda && paramDef.ParameterType.ContainsAnonymousType()))
 					astParam.Type = ConvertType(paramDef.ParameterType, paramDef);
-				astParam.Name = AstHumanReadable.MakeReadable(paramDef, paramDef.Name, "parameter");
+                astParam.Name = AstHumanReadable.MakeReadable(paramDef, paramDef.Name, AstHumanReadable.Parameter);
 				
 				if (paramDef.ParameterType is ByReferenceType) {
 					astParam.ParameterModifier = (!paramDef.IsIn && paramDef.IsOut) ? ParameterModifier.Out : ParameterModifier.Ref;
@@ -1289,7 +1289,7 @@ namespace ICSharpCode.Decompiler.Ast
 				if (enumDefinition != null && enumDefinition.IsEnum) {
 					foreach (FieldDefinition field in enumDefinition.Fields) {
 						if (field.IsStatic && object.Equals(CSharpPrimitiveCast.Cast(TypeCode.Int64, field.Constant, false), val))
-							return ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, "field")).WithAnnotation(field);
+                            return ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
 						else if (!field.IsStatic && field.IsRuntimeSpecialName)
 							type = field.FieldType; // use primitive type of the enum
 					}
@@ -1320,7 +1320,7 @@ namespace ICSharpCode.Decompiler.Ast
 								continue;	// skip None enum value
 
 							if ((fieldValue & enumValue) == fieldValue) {
-								var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, "field")).WithAnnotation(field);
+                                var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
 								if (expr == null)
 									expr = fieldExpression;
 								else
@@ -1329,7 +1329,7 @@ namespace ICSharpCode.Decompiler.Ast
 								enumValue &= ~fieldValue;
 							}
 							if ((fieldValue & negatedEnumValue) == fieldValue) {
-                                var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, "field")).WithAnnotation(field);
+                                var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
 								if (negatedExpr == null)
 									negatedExpr = fieldExpression;
 								else

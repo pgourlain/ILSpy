@@ -95,7 +95,7 @@ namespace ICSharpCode.Decompiler.Ast
 				                      select new { p, v.Name }))
 				{
                     //TOOD:PGO:makeReadable
-					pair.p.Name = AstHumanReadable.MakeReadable(pair.p.Annotation<ParameterDefinition>(), pair.Name, "parameter");
+                    pair.p.Name = AstHumanReadable.MakeReadable(pair.p.Annotation<ParameterDefinition>(), pair.Name, AstHumanReadable.Parameter);
 				}
 			}
 			
@@ -517,7 +517,7 @@ namespace ICSharpCode.Decompiler.Ast
 					return TransformCall(true, byteCode,  args);
 					case ILCode.Ldftn: {
 						Cecil.MethodReference cecilMethod = ((MethodReference)operand);
-                        var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, "method"));
+                        var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, AstHumanReadable.Method));
 						expr.TypeArguments.AddRange(ConvertTypeArguments(cecilMethod));
 						expr.AddAnnotation(cecilMethod);
 						return new IdentifierExpression("ldftn").Invoke(expr)
@@ -525,7 +525,7 @@ namespace ICSharpCode.Decompiler.Ast
 					}
 					case ILCode.Ldvirtftn: {
 						Cecil.MethodReference cecilMethod = ((MethodReference)operand);
-						var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, "method"));
+                        var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, AstHumanReadable.Method));
 						expr.TypeArguments.AddRange(ConvertTypeArguments(cecilMethod));
 						expr.AddAnnotation(cecilMethod);
 						return new IdentifierExpression("ldvirtftn").Invoke(expr)
@@ -560,34 +560,34 @@ namespace ICSharpCode.Decompiler.Ast
                     var fi = (FieldReference)operand;
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-					return arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand);
+                    return arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand);
 				case ILCode.Ldsfld:
                     fi = (FieldReference)operand;
 					return AstBuilder.ConvertType(fi.DeclaringType)
-						.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand);
+                        .Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand);
 				case ILCode.Stfld:
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
                     fi = (FieldReference)operand;
-					return new AssignmentExpression(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand), arg2);
+                    return new AssignmentExpression(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand), arg2);
 				case ILCode.Stsfld:
                     fi = (FieldReference)operand;
 
 					return new AssignmentExpression(
 						AstBuilder.ConvertType(fi.DeclaringType)
-						.Member(AstHumanReadable.MakeReadable(fi,fi.Name, "field")).WithAnnotation(operand),
+                        .Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand),
 						arg1);
 				case ILCode.Ldflda:
                     fi = (FieldReference)operand;
 
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-					return MakeRef(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand));
+                    return MakeRef(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand));
 				case ILCode.Ldsflda:
                     fi = (FieldReference)operand;
 					return MakeRef(
 						AstBuilder.ConvertType(fi.DeclaringType)
-						.Member(AstHumanReadable.MakeReadable(fi, fi.Name, "field")).WithAnnotation(operand));
+                        .Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand));
 					case ILCode.Ldloc: {
 						ILVariable v = (ILVariable)operand;
 						if (!v.IsParameter)
@@ -597,7 +597,7 @@ namespace ICSharpCode.Decompiler.Ast
                             expr = new ThisReferenceExpression();
                         else
                         {
-                            var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, "parameter") : v.Name;
+                            var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) : v.Name;
                             expr = new Ast.IdentifierExpression(pName).WithAnnotation(operand);
                         }
 						return v.IsParameter && v.Type is ByReferenceType ? MakeRef(expr) : expr;
@@ -608,7 +608,7 @@ namespace ICSharpCode.Decompiler.Ast
 							return MakeRef(new ThisReferenceExpression());
 						if (!v.IsParameter)
 							localVariablesToDefine.Add((ILVariable)operand);
-                        var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, "parameter") : v.Name;
+                        var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) : v.Name;
 						return MakeRef(new Ast.IdentifierExpression(pName).WithAnnotation(operand));
 					}
 					case ILCode.Ldnull: return new Ast.NullReferenceExpression();
@@ -705,7 +705,9 @@ namespace ICSharpCode.Decompiler.Ast
 						ILVariable locVar = (ILVariable)operand;
 						if (!locVar.IsParameter)
 							localVariablesToDefine.Add(locVar);
-                        var pName = locVar.IsParameter ? AstHumanReadable.MakeReadable(locVar.OriginalParameter, locVar.Name, "parameter") : locVar.Name;
+                        var pName = locVar.IsParameter 
+                            ? AstHumanReadable.MakeReadable(locVar.OriginalParameter, locVar.Name, AstHumanReadable.Parameter) 
+                            : locVar.Name;
 
 						return new Ast.AssignmentExpression(new Ast.IdentifierExpression(pName).WithAnnotation(locVar), arg1);
 					}
@@ -906,7 +908,7 @@ namespace ICSharpCode.Decompiler.Ast
 			}
 			// Default invocation
 			AdjustArgumentsForMethodCall(cecilMethodDef ?? cecilMethod, methodArgs);
-			return target.Invoke(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, "method"), ConvertTypeArguments(cecilMethod), methodArgs).WithAnnotation(cecilMethod);
+			return target.Invoke(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, AstHumanReadable.Method), ConvertTypeArguments(cecilMethod), methodArgs).WithAnnotation(cecilMethod);
 		}
 		
 		static void AdjustArgumentsForMethodCall(MethodReference cecilMethod, List<Expression> methodArgs)

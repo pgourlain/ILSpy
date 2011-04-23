@@ -12,6 +12,18 @@ namespace ICSharpCode.Decompiler.Ast
         static Dictionary<string, string> _dicoCecil = new Dictionary<string, string>();
         static Dictionary<string, bool> _readable = new Dictionary<string, bool>();
 
+        #region constants
+        public static readonly string Field = "field";
+        public static readonly string Parameter = "parameter";
+        public static readonly string GenericType = "T";
+        public static readonly string NestedType = "nestedtype";
+        public static readonly string Type = "type";
+        public static readonly string Namespace = "namespace";
+        public static readonly string Event = "event";
+        public static readonly string Method = "method";
+        public static readonly string Property = "property";
+        #endregion
+
         private static bool IsReadable(string memberName)
         {
             bool result;
@@ -28,7 +40,7 @@ namespace ICSharpCode.Decompiler.Ast
             if (!IsReadable(memberName))
             {
                 string key = string.Empty;
-                if (prefix == "namespace")
+                if (prefix == AstHumanReadable.Namespace)
                 {
                     //special case for namespace, it's associated to a type
                     key = string.Format("namespace_{0}", memberName);

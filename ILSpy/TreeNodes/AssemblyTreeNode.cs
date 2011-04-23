@@ -31,6 +31,7 @@ using ICSharpCode.ILSpy.TextView;
 using ICSharpCode.TreeView;
 using Microsoft.Win32;
 using Mono.Cecil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -116,7 +117,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			foreach (TypeDefinition type in mainModule.Types.OrderBy(t => t.FullName)) {
 				NamespaceTreeNode ns;
 				if (!namespaces.TryGetValue(type.Namespace, out ns)) {
-					ns = new NamespaceTreeNode(ICSharpCode.Decompiler.Ast.AstHumanReadable.MakeReadable(type, type.Namespace, "namespace"));
+                    ns = new NamespaceTreeNode(AstHumanReadable.MakeReadable(type, type.Namespace, AstHumanReadable.Namespace));
 					namespaces[type.Namespace] = ns;
 				}
 				TypeTreeNode node = new TypeTreeNode(type, this);
