@@ -179,6 +179,12 @@ namespace ICSharpCode.ILSpy.TreeNodes
                 return base.ForegroundBrush;
             }
         }
+
+        public virtual string Name
+        {
+            get;
+            protected set;
+        }
 	}
 	
 	public enum FilterResult

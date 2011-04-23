@@ -41,10 +41,11 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			this.r = r;
 			this.parentAssembly = parentAssembly;
 			this.LazyLoading = true;
+            this.Name = r.Name;
 		}
 		
 		public override object Text {
-			get { return r.Name; }
+			get { return this.Name; }
 		}
 		
 		public override object Icon {

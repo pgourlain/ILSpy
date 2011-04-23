@@ -457,7 +457,7 @@ namespace ICSharpCode.ILSpy
 				buffer.Append(@"]");
 				return buffer.ToString();
 			} else
-				return property.Name;
+				return AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property);
 		}
 		
 		public override bool ShowMember(MemberReference member)

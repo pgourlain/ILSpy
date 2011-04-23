@@ -19,6 +19,7 @@
 using System;
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -45,6 +46,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				foreach (var m in ev.OtherMethods)
 					this.Children.Add(new MethodTreeNode(m));
 			}
+            this.Name = AstHumanReadable.MakeReadable(ev, ev.Name, AstHumanReadable.Event);
 		}
 		
 		public EventDefinition EventDefinition {
@@ -52,7 +54,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		}
 		
 		public override object Text {
-			get { return HighlightSearchMatch(ev.Name, " : " + this.Language.TypeToString(ev.EventType, false, ev)); }
+			get { return HighlightSearchMatch(this.Name, " : " + this.Language.TypeToString(ev.EventType, false, ev)); }
 		}
 		
 		public override object Icon
@@ -80,7 +82,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override FilterResult Filter(FilterSettings settings)
 		{
-			if (settings.SearchTermMatches(ev.Name) && settings.Language.ShowMember(ev))
+			if (settings.SearchTermMatches(this.Name) && settings.Language.ShowMember(ev))
 				return FilterResult.Match;
 			else
 				return FilterResult.Hidden;

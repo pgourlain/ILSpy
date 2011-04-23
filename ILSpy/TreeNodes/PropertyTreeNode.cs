@@ -20,6 +20,7 @@ using System;
 using System.Windows.Media;
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -48,7 +49,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				foreach (var m in property.OtherMethods)
 					this.Children.Add(new MethodTreeNode(m));
 			}
-			
+            this.Name = AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property);
 		}
 
 		public PropertyDefinition PropertyDefinition {
@@ -138,7 +139,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override FilterResult Filter(FilterSettings settings)
 		{
-			if (settings.SearchTermMatches(property.Name) && settings.Language.ShowMember(property))
+			if (settings.SearchTermMatches(this.Name) && settings.Language.ShowMember(property))
 				return FilterResult.Match;
 			else
 				return FilterResult.Hidden;

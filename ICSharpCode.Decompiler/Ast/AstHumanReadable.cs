@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace ICSharpCode.Decompiler.Ast
 {
@@ -22,6 +23,10 @@ namespace ICSharpCode.Decompiler.Ast
         public static readonly string Event = "event";
         public static readonly string Method = "method";
         public static readonly string Property = "property";
+        public static readonly string Variable = "variable";
+        public static readonly string Module = "module";
+        public static readonly string Resource = "resource";
+
         #endregion
 
         private static bool IsReadable(string memberName)
@@ -35,6 +40,33 @@ namespace ICSharpCode.Decompiler.Ast
             return result;
         }
 
+        public static string MakeReadable(VariableDefinition var, string varName, string prefix)
+        {
+            return MakeReadable(varName, "var");
+        }
+        
+        static string MakeReadable(string name, string prefix)
+        {
+            if (!IsReadable(name))
+            {
+                var key = string.Format("{0}_{1}", prefix, name);
+                string result;
+                if (!_dicoCecil.TryGetValue(key, out result))
+                {
+                    counter++;
+                    result = string.Format("{0}_{1}", prefix, counter);
+                    _dicoCecil.Add(key, result);
+                }
+                return result;
+            }
+            return name;
+        }
+
+        public static string MakeReadable(Mono.Cecil.Resource r, string resName, string prefix)
+        {
+            return MakeReadable(resName, "resource");
+        }
+
         public static string MakeReadable(IMetadataTokenProvider type, string memberName, string prefix)
         {
             if (!IsReadable(memberName))
@@ -42,6 +74,8 @@ namespace ICSharpCode.Decompiler.Ast
                 string key = string.Empty;
                 if (prefix == AstHumanReadable.Namespace)
                 {
+                    if (string.IsNullOrEmpty(memberName))
+                        return string.Empty;
                     //special case for namespace, it's associated to a type
                     key = string.Format("namespace_{0}", memberName);
                 }
@@ -96,26 +130,6 @@ namespace ICSharpCode.Decompiler.Ast
                 sb.Append(MakeReadable(fr.FieldType, fr.FieldType.Name, ""));
                 sb.Append("_");
                 return sb.ToString();
-                //if (fr.FieldType.IsValueType)
-                //{
-                //    return fr.FieldType.Name.Substring(0, 1).ToLower() + "_";
-                //}
-                //else if (string.CompareOrdinal("String", fr.FieldType.Name) == 0)
-                //{
-                //    return "s_";
-                //}
-                //else
-                //{
-                //    //StringBuilder sb = new StringBuilder();
-                //    //foreach (var c in fr.FieldType.Name)
-                //    //{
-                //    //    if (Char.IsUpper(c))
-                //    //        sb.Append(char.ToLower(c));
-                //    //}
-                //    //return sb.ToString();
-                //    //OR
-                //    return new string(fr.FieldType.Name.Where(c => char.IsUpper(c)).Select(c => Char.ToLower(c)).ToArray());
-                //}
             }
             else
             {

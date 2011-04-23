@@ -23,6 +23,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy
 {
@@ -122,7 +123,7 @@ namespace ICSharpCode.ILSpy
 		{
 			if (property == null)
 				throw new ArgumentNullException("property");
-			return property.Name;
+            return AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property);
 		}
 		
 		/// <summary>

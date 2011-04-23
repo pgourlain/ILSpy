@@ -20,6 +20,7 @@ using System;
 using System.Windows.Media;
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -29,6 +30,8 @@ namespace ICSharpCode.ILSpy.TreeNodes
 	public sealed class FieldTreeNode : ILSpyTreeNode, IMemberTreeNode
 	{
 		readonly FieldDefinition field;
+
+        readonly string fieldName;
 
 		public FieldDefinition FieldDefinition
 		{
@@ -40,11 +43,12 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			if (field == null)
 				throw new ArgumentNullException("field");
 			this.field = field;
+            fieldName = AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field);
 		}
 
 		public override object Text
 		{
-			get { return HighlightSearchMatch(field.Name, " : " + this.Language.TypeToString(field.FieldType, false, field)); }
+            get { return HighlightSearchMatch(this.fieldName, " : " + this.Language.TypeToString(field.FieldType, false, field)); }
 		}
 
 		public override object Icon
@@ -85,7 +89,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override FilterResult Filter(FilterSettings settings)
 		{
-			if (settings.SearchTermMatches(field.Name) && settings.Language.ShowMember(field))
+			if (settings.SearchTermMatches(this.fieldName) && settings.Language.ShowMember(field))
 				return FilterResult.Match;
 			else
 				return FilterResult.Hidden;

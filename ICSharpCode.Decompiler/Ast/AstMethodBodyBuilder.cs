@@ -110,7 +110,7 @@ namespace ICSharpCode.Decompiler.Ast
 					type = new SimpleType("var");
 				else
 					type = AstBuilder.ConvertType(v.Type);
-				var newVarDecl = new VariableDeclarationStatement(type, v.Name);
+				var newVarDecl = new VariableDeclarationStatement(type, AstHumanReadable.MakeReadable(v.OriginalVariable, v.Name, AstHumanReadable.Variable));
 				astBlock.Statements.InsertBefore(insertionPoint, newVarDecl);
 			}
 			
@@ -597,7 +597,8 @@ namespace ICSharpCode.Decompiler.Ast
                             expr = new ThisReferenceExpression();
                         else
                         {
-                            var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) : v.Name;
+                            var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) 
+                                : AstHumanReadable.MakeReadable(v.OriginalVariable, v.Name, AstHumanReadable.Variable);
                             expr = new Ast.IdentifierExpression(pName).WithAnnotation(operand);
                         }
 						return v.IsParameter && v.Type is ByReferenceType ? MakeRef(expr) : expr;
@@ -608,7 +609,8 @@ namespace ICSharpCode.Decompiler.Ast
 							return MakeRef(new ThisReferenceExpression());
 						if (!v.IsParameter)
 							localVariablesToDefine.Add((ILVariable)operand);
-                        var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) : v.Name;
+                        var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) 
+                            : AstHumanReadable.MakeReadable(v.OriginalVariable, v.Name, AstHumanReadable.Variable);
 						return MakeRef(new Ast.IdentifierExpression(pName).WithAnnotation(operand));
 					}
 					case ILCode.Ldnull: return new Ast.NullReferenceExpression();
@@ -705,9 +707,9 @@ namespace ICSharpCode.Decompiler.Ast
 						ILVariable locVar = (ILVariable)operand;
 						if (!locVar.IsParameter)
 							localVariablesToDefine.Add(locVar);
-                        var pName = locVar.IsParameter 
-                            ? AstHumanReadable.MakeReadable(locVar.OriginalParameter, locVar.Name, AstHumanReadable.Parameter) 
-                            : locVar.Name;
+                        var pName = locVar.IsParameter
+                            ? AstHumanReadable.MakeReadable(locVar.OriginalParameter, locVar.Name, AstHumanReadable.Parameter)
+                            : AstHumanReadable.MakeReadable(locVar.OriginalVariable, locVar.Name, AstHumanReadable.Variable);
 
 						return new Ast.AssignmentExpression(new Ast.IdentifierExpression(pName).WithAnnotation(locVar), arg1);
 					}

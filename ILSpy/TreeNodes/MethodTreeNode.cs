@@ -21,6 +21,7 @@ using System.Text;
 using System.Windows.Media;
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -41,6 +42,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			if (method == null)
 				throw new ArgumentNullException("method");
 			this.method = method;
+            this.Name = AstHumanReadable.MakeReadable(method, method.Name, AstHumanReadable.Method);
 		}
 
 		public override object Text
@@ -76,7 +78,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			}
 			b.Append(") : ");
 			b.Append(language.TypeToString(method.ReturnType, false, method.MethodReturnType));
-			return HighlightSearchMatch(method.Name, b.ToString());
+            return HighlightSearchMatch(AstHumanReadable.MakeReadable(method, method.Name, AstHumanReadable.Method), b.ToString());
 		}
 
 		public override object Icon
@@ -139,7 +141,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override FilterResult Filter(FilterSettings settings)
 		{
-			if (settings.SearchTermMatches(method.Name) && settings.Language.ShowMember(method))
+			if (settings.SearchTermMatches(this.Name) && settings.Language.ShowMember(method))
 				return FilterResult.Match;
 			else
 				return FilterResult.Hidden;
