@@ -160,7 +160,7 @@ namespace ICSharpCode.Decompiler.Ast
 		public void AddType(TypeDefinition typeDef)
 		{
 			var astType = CreateType(typeDef);
-			NamespaceDeclaration astNS = GetCodeNamespace(typeDef.Namespace);
+			NamespaceDeclaration astNS = GetCodeNamespace(AstHumanReadable.MakeReadable(typeDef, typeDef.Namespace, "namespace"));
 			if (astNS != null) {
 				astNS.AddChild(astType, NamespaceDeclaration.MemberRole);
 			} else {
@@ -379,7 +379,7 @@ namespace ICSharpCode.Decompiler.Ast
 				return memberType;
 			} else {
 				string ns = type.Namespace ?? string.Empty;
-                ns = AstHumanReadable.MakeReadable(type, ns, "ns");
+                ns = AstHumanReadable.MakeReadable(type, ns, "namespace");
 				string name = AstHumanReadable.MakeReadable(type, type.Name, null);
 				if (name == null)
 					throw new InvalidOperationException("type.Name returned null. Type: " + type.ToString());
@@ -452,7 +452,7 @@ namespace ICSharpCode.Decompiler.Ast
 			if (type.HasGenericParameters) {
 				List<AstType> typeArguments = new List<AstType>();
 				foreach (GenericParameter gp in type.GenericParameters) {
-					typeArguments.Add(new SimpleType(gp.Name));
+					typeArguments.Add(new SimpleType(AstHumanReadable.MakeReadable(gp, gp.Name, "T")));
 				}
 				ApplyTypeArgumentsTo(astType, typeArguments);
 			}

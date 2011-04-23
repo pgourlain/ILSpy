@@ -94,7 +94,8 @@ namespace ICSharpCode.Decompiler.Ast
 				                      join v in astBuilder.Parameters on p.Annotation<ParameterDefinition>() equals v.OriginalParameter
 				                      select new { p, v.Name }))
 				{
-					pair.p.Name = pair.Name;
+                    //TOOD:PGO:makeReadable
+					pair.p.Name = AstHumanReadable.MakeReadable(pair.p.Annotation<ParameterDefinition>(), pair.Name, "parameter");
 				}
 			}
 			
@@ -516,7 +517,7 @@ namespace ICSharpCode.Decompiler.Ast
 					return TransformCall(true, byteCode,  args);
 					case ILCode.Ldftn: {
 						Cecil.MethodReference cecilMethod = ((MethodReference)operand);
-						var expr = new Ast.IdentifierExpression(cecilMethod.Name);
+                        var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, "method"));
 						expr.TypeArguments.AddRange(ConvertTypeArguments(cecilMethod));
 						expr.AddAnnotation(cecilMethod);
 						return new IdentifierExpression("ldftn").Invoke(expr)
@@ -524,7 +525,7 @@ namespace ICSharpCode.Decompiler.Ast
 					}
 					case ILCode.Ldvirtftn: {
 						Cecil.MethodReference cecilMethod = ((MethodReference)operand);
-						var expr = new Ast.IdentifierExpression(cecilMethod.Name);
+						var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, "method"));
 						expr.TypeArguments.AddRange(ConvertTypeArguments(cecilMethod));
 						expr.AddAnnotation(cecilMethod);
 						return new IdentifierExpression("ldvirtftn").Invoke(expr)
@@ -592,10 +593,13 @@ namespace ICSharpCode.Decompiler.Ast
 						if (!v.IsParameter)
 							localVariablesToDefine.Add((ILVariable)operand);
 						Expression expr;
-						if (v.IsParameter && v.OriginalParameter.Index < 0)
-							expr = new ThisReferenceExpression();
-						else
-							expr = new Ast.IdentifierExpression(((ILVariable)operand).Name).WithAnnotation(operand);
+                        if (v.IsParameter && v.OriginalParameter.Index < 0)
+                            expr = new ThisReferenceExpression();
+                        else
+                        {
+                            var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, "parameter") : v.Name;
+                            expr = new Ast.IdentifierExpression(pName).WithAnnotation(operand);
+                        }
 						return v.IsParameter && v.Type is ByReferenceType ? MakeRef(expr) : expr;
 					}
 					case ILCode.Ldloca: {
@@ -604,7 +608,8 @@ namespace ICSharpCode.Decompiler.Ast
 							return MakeRef(new ThisReferenceExpression());
 						if (!v.IsParameter)
 							localVariablesToDefine.Add((ILVariable)operand);
-						return MakeRef(new Ast.IdentifierExpression(((ILVariable)operand).Name).WithAnnotation(operand));
+                        var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, "parameter") : v.Name;
+						return MakeRef(new Ast.IdentifierExpression(pName).WithAnnotation(operand));
 					}
 					case ILCode.Ldnull: return new Ast.NullReferenceExpression();
 					case ILCode.Ldstr:  return new Ast.PrimitiveExpression(operand);
@@ -700,7 +705,9 @@ namespace ICSharpCode.Decompiler.Ast
 						ILVariable locVar = (ILVariable)operand;
 						if (!locVar.IsParameter)
 							localVariablesToDefine.Add(locVar);
-						return new Ast.AssignmentExpression(new Ast.IdentifierExpression(locVar.Name).WithAnnotation(locVar), arg1);
+                        var pName = locVar.IsParameter ? AstHumanReadable.MakeReadable(locVar.OriginalParameter, locVar.Name, "parameter") : locVar.Name;
+
+						return new Ast.AssignmentExpression(new Ast.IdentifierExpression(pName).WithAnnotation(locVar), arg1);
 					}
 					case ILCode.Switch: return InlineAssembly(byteCode, args);
 					case ILCode.Tail: return InlineAssembly(byteCode, args);

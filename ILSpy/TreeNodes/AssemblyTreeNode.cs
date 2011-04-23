@@ -116,7 +116,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			foreach (TypeDefinition type in mainModule.Types.OrderBy(t => t.FullName)) {
 				NamespaceTreeNode ns;
 				if (!namespaces.TryGetValue(type.Namespace, out ns)) {
-					ns = new NamespaceTreeNode(type.Namespace);
+					ns = new NamespaceTreeNode(ICSharpCode.Decompiler.Ast.AstHumanReadable.MakeReadable(type, type.Namespace, "namespace"));
 					namespaces[type.Namespace] = ns;
 				}
 				TypeTreeNode node = new TypeTreeNode(type, this);
