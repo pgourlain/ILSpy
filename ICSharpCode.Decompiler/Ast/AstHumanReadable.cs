@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+Author : Pierrick Gourlain 
+Url : http://blogs.developpeur.org/Pierrick/
+ * 
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +13,11 @@ using Mono.Cecil.Cil;
 
 namespace ICSharpCode.Decompiler.Ast
 {
+    /// <summary>
+    /// first implementation of a manner to make readable 'string'
+    /// </summary>
+    /// Why ? : obfuscated code is not 'human' readable 
+    /// 23/04/2011 : first draft, may be it's not perfect, but it's works as it does
     public static class AstHumanReadable
     {
         static int counter = 0;
@@ -29,6 +40,7 @@ namespace ICSharpCode.Decompiler.Ast
 
         #endregion
 
+        #region private methods
         private static bool IsReadable(string memberName)
         {
             bool result;
@@ -40,11 +52,6 @@ namespace ICSharpCode.Decompiler.Ast
             return result;
         }
 
-        public static string MakeReadable(VariableDefinition var, string varName, string prefix)
-        {
-            return MakeReadable(varName, "var");
-        }
-        
         static string MakeReadable(string name, string prefix)
         {
             if (!IsReadable(name))
@@ -62,6 +69,48 @@ namespace ICSharpCode.Decompiler.Ast
             return name;
         }
 
+        /// <summary>
+        /// add prefix for serveral types like fields, interfaces
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private static string GetPrefixType(IMetadataTokenProvider type)
+        {
+            var fr = type as FieldReference;
+            if (fr != null)
+            {
+                StringBuilder sb = new StringBuilder("_");
+                sb.Append(MakeReadable(fr.FieldType, fr.FieldType.Name, ""));
+                sb.Append("_");
+                return sb.ToString();
+            }
+            else
+            {
+                var tr = type as TypeReference;
+                if (tr != null)
+                {
+                    if (tr.IsNested)
+                    {
+                        var typeDef = tr.ResolveWithinSameModule();
+                        if (typeDef != null)
+                        {
+                            if (typeDef.IsInterface)
+                                return "I";
+                        }
+                    }
+                }
+            }
+            return string.Empty;
+        }
+        #endregion
+
+        #region public methods
+        
+        public static string MakeReadable(VariableDefinition var, string varName, string prefix)
+        {
+            return MakeReadable(varName, "var");
+        }
+        
         public static string MakeReadable(Mono.Cecil.Resource r, string resName, string prefix)
         {
             return MakeReadable(resName, "resource");
@@ -103,6 +152,7 @@ namespace ICSharpCode.Decompiler.Ast
                 string result;
                 if (!_dicoCecil.TryGetValue(key, out result))
                 {
+                    //the best way should be to calculate a universal unique string from the key
                     counter++;
                     if (string.IsNullOrEmpty(prefix))
                         result = string.Format("type_{0}", counter);
@@ -115,39 +165,7 @@ namespace ICSharpCode.Decompiler.Ast
             }
             return memberName;
         }
+        #endregion
 
-        /// <summary>
-        /// add prefix for serveral types like fields
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        private static string GetPrefixType(IMetadataTokenProvider type)
-        {
-            var fr = type as FieldReference;
-            if (fr != null)
-            {
-                StringBuilder sb = new StringBuilder("_");
-                sb.Append(MakeReadable(fr.FieldType, fr.FieldType.Name, ""));
-                sb.Append("_");
-                return sb.ToString();
-            }
-            else
-            {
-                var tr = type as TypeReference;
-                if (tr != null)
-                {
-                    if (tr.IsNested)
-                    {
-                        var typeDef = tr.ResolveWithinSameModule();
-                        if (typeDef != null)
-                        {
-                            if (typeDef.IsInterface)
-                                return "I";
-                        }
-                    }
-                }
-            }
-            return string.Empty;
-        }
     }
 }
