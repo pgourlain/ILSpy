@@ -18,20 +18,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using ICSharpCode.NRefactory.Utils;
 using ICSharpCode.TreeView;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace ICSharpCode.ILSpy.TreeNodes.Analyzer
 {
-	class AnalyzedMethodUsedByTreeNode : AnalyzerTreeNode
+	internal sealed class AnalyzedMethodUsedByTreeNode : AnalyzerTreeNode
 	{
-		MethodDefinition analyzedMethod;
-		ThreadingSupport threading;
+		private readonly MethodDefinition analyzedMethod;
+		private readonly ThreadingSupport threading;
 
 		public AnalyzedMethodUsedByTreeNode(MethodDefinition analyzedMethod)
 		{
@@ -67,7 +64,7 @@ namespace ICSharpCode.ILSpy.TreeNodes.Analyzer
 			}
 		}
 
-		IEnumerable<SharpTreeNode> FetchChildren(CancellationToken ct)
+		private IEnumerable<SharpTreeNode> FetchChildren(CancellationToken ct)
 		{
 			ScopedWhereUsedScopeAnalyzer<SharpTreeNode> analyzer;
 
@@ -75,7 +72,7 @@ namespace ICSharpCode.ILSpy.TreeNodes.Analyzer
 			return analyzer.PerformAnalysis(ct);
 		}
 
-		IEnumerable<SharpTreeNode> FindReferencesInType(TypeDefinition type)
+		private IEnumerable<SharpTreeNode> FindReferencesInType(TypeDefinition type)
 		{
 			string name = analyzedMethod.Name;
 			foreach (MethodDefinition method in type.Methods) {
@@ -84,11 +81,17 @@ namespace ICSharpCode.ILSpy.TreeNodes.Analyzer
 					continue;
 				foreach (Instruction instr in method.Body.Instructions) {
 					MethodReference mr = instr.Operand as MethodReference;
-					if (mr != null && mr.Name == name && Helpers.IsReferencedBy(analyzedMethod.DeclaringType, mr.DeclaringType) && mr.Resolve() == analyzedMethod) {
+					if (mr != null &&
+						mr.Name == name &&
+						Helpers.IsReferencedBy(analyzedMethod.DeclaringType, mr.DeclaringType) &&
+						mr.Resolve() == analyzedMethod) {
 						found = true;
 						break;
 					}
 				}
+
+				method.Body = null;
+
 				if (found)
 					yield return new AnalyzedMethodTreeNode(method);
 			}
