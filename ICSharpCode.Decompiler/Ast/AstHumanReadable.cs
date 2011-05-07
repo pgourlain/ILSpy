@@ -28,7 +28,6 @@ namespace ICSharpCode.Decompiler.Ast
         public static readonly string Field = "field";
         public static readonly string Parameter = "parameter";
         public static readonly string GenericType = "T";
-        public static readonly string NestedType = "nestedtype";
         public static readonly string Type = "type";
         public static readonly string Namespace = "namespace";
         public static readonly string Event = "event";
@@ -120,35 +119,9 @@ namespace ICSharpCode.Decompiler.Ast
         {
             if (!IsReadable(memberName))
             {
-                string key = string.Empty;
-                if (prefix == AstHumanReadable.Namespace)
-                {
-                    if (string.IsNullOrEmpty(memberName))
-                        return string.Empty;
-                    //special case for namespace, it's associated to a type
-                    key = string.Format("namespace_{0}", memberName);
-                }
-                else
-                {
-                    var methodDef = type as MethodDefinition;
-                    if (methodDef != null)
-                    {
-                        if (methodDef != null && methodDef.HasOverrides)
-                        {
-                            //we should find the name of the base method
-                            var m = methodDef.Overrides.First();
-                            var baseMethodDef = m.Resolve();
-                            return MakeReadable(baseMethodDef, memberName, prefix);
-                        }
-                        key = string.Format("{0}.{1}.{2}", methodDef.DeclaringType.Namespace, methodDef.DeclaringType.Namespace, methodDef.Name);
-                    }
-                    else if (type is MethodReference)
-                    {
-                        key = string.Format("{0}_{1}", type.MetadataToken.ToInt32(), memberName);
-                    }
-                    else
-                        key = string.Format("{0}_{1}", type.MetadataToken.ToInt32(), memberName);
-                }
+                string key = CreateKey(type, memberName, prefix);
+                if (string.IsNullOrEmpty(key))
+                    return string.Empty;
                 string result;
                 if (!_dicoCecil.TryGetValue(key, out result))
                 {
@@ -167,5 +140,38 @@ namespace ICSharpCode.Decompiler.Ast
         }
         #endregion
 
+        private static string CreateKey(IMetadataTokenProvider type, string memberName, string prefix)
+        {
+            string key = string.Empty;
+            if (prefix == AstHumanReadable.Namespace)
+            {
+                if (string.IsNullOrEmpty(memberName))
+                    return string.Empty;
+                //special case for namespace, it's associated to a type
+                key = string.Format("namespace_{0}", memberName);
+            }
+            else
+            {
+                var methodDef = type as MethodDefinition;
+                if (methodDef != null)
+                {
+                    if (methodDef != null && methodDef.HasOverrides)
+                    {
+                        //we should find the name of the base method
+                        var m = methodDef.Overrides.First();
+                        var baseMethodDef = m.Resolve();
+                        return CreateKey(baseMethodDef, memberName, prefix);
+                    }
+                    key = string.Format("{0}.{1}.{2}", methodDef.DeclaringType.Namespace, methodDef.DeclaringType.Namespace, methodDef.Name);
+                }
+                else if (type is MethodReference)
+                {
+                    key = string.Format("{0}_{1}", type.MetadataToken.ToInt32(), memberName);
+                }
+                else
+                    key = string.Format("{0}_{1}", type.MetadataToken.ToInt32(), memberName);
+            }
+            return key;
+        }
     }
 }

@@ -32,6 +32,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy
 {
@@ -235,7 +236,8 @@ namespace ICSharpCode.ILSpy
 			
 			void PerformSearch(TypeDefinition type)
 			{
-				if (searchMode == SearchMode_Type && IsMatch(type.Name)) {
+                if (searchMode == SearchMode_Type && IsMatch(AstHumanReadable.MakeReadable(type, type.Name, AstHumanReadable.Type)))
+                {
 					AddResult(new SearchResult {
 					          	Member = type,
 					          	Image = TypeTreeNode.GetIcon(type),
@@ -253,7 +255,7 @@ namespace ICSharpCode.ILSpy
 					return;
 				
 				foreach (FieldDefinition field in type.Fields) {
-					if (IsMatch(field.Name)) {
+					if (IsMatch(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field))) {
 						AddResult(new SearchResult {
 						          	Member = field,
 						          	Image = FieldTreeNode.GetIcon(field),
@@ -264,7 +266,7 @@ namespace ICSharpCode.ILSpy
 					}
 				}
 				foreach (PropertyDefinition property in type.Properties) {
-					if (IsMatch(property.Name)) {
+					if (IsMatch(AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property))) {
 						AddResult(new SearchResult {
 						          	Member = property,
 						          	Image = PropertyTreeNode.GetIcon(property),
@@ -275,7 +277,7 @@ namespace ICSharpCode.ILSpy
 					}
 				}
 				foreach (EventDefinition ev in type.Events) {
-					if (IsMatch(ev.Name)) {
+					if (IsMatch(AstHumanReadable.MakeReadable(ev, ev.Name, AstHumanReadable.Event))) {
 						AddResult(new SearchResult {
 						          	Member = ev,
 						          	Image = EventTreeNode.GetIcon(ev),
@@ -286,7 +288,7 @@ namespace ICSharpCode.ILSpy
 					}
 				}
 				foreach (MethodDefinition method in type.Methods) {
-					if (IsMatch(method.Name)) {
+					if (IsMatch(AstHumanReadable.MakeReadable(method, method.Name, AstHumanReadable.Method))) {
 						AddResult(new SearchResult {
 						          	Member = method,
 						          	Image = MethodTreeNode.GetIcon(method),

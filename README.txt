@@ -16,3 +16,9 @@ ILSpy Contributors:
 	Ed Harvey
 	Siegfried Pammer
 	Artur Zgodziński
+-----------------------------------------------------------------
+this fork add somes features :
+- displays non public classes as gray
+- displays a splash screen at startup
+- when code is obfuscated and unreadable by human, unreadable symbols are renamed to friendly names
+
