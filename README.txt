@@ -15,10 +15,12 @@ ILSpy Contributors:
 	David Srbecky
 	Ed Harvey
 	Siegfried Pammer
-	Artur Zgodziński
------------------------------------------------------------------
-this fork add somes features :
+	Artur Zgodzinski
+	Eusebiu Marcu
+
+Pierrick Gourlain add somes features in this fork :
 - displays non public classes as gray
 - displays a splash screen at startup
+- somes tweaks in assembly treeview
 - when code is obfuscated and unreadable by human, unreadable symbols are renamed to friendly names
 
