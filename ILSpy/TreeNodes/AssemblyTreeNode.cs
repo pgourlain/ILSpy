@@ -135,6 +135,10 @@ namespace ICSharpCode.ILSpy.TreeNodes
 					this.Children.Add(ns);
 			}
 		}
+		
+		public override bool CanExpandRecursively {
+			get { return true; }
+		}
 
 		public TypeTreeNode FindTypeNode(TypeDefinition def)
 		{
