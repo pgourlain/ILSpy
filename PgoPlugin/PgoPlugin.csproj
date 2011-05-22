@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\ILSpy\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,21 +32,37 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddBookmark.cs" />
     <Compile Include="BookmarksCommand.cs" />
+    <Compile Include="Debugger\CallStackCommand.cs" />
+    <Compile Include="Debugger\PgoCallStackPane.xaml.cs">
+      <DependentUpon>PgoCallStackPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Debugger\PgoCallStackPanePresenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Debugger\Debugger.Core\Debugger.Core.csproj">
+      <Project>{1D18D788-F7EE-4585-A23B-34DC8EC63CB8}</Project>
+      <Name>Debugger.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Debugger\ILSpy.Debugger\ILSpy.Debugger.csproj">
+      <Project>{6D3D0F0D-348D-456A-A6ED-E9BD5EFABB6A}</Project>
+      <Name>ILSpy.Debugger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ILSpy\ILSpy.csproj">
       <Project>{1E85EFF9-E370-4683-83E4-8A3D063FF791}</Project>
       <Name>ILSpy</Name>
@@ -61,6 +77,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="addbookmark.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Debugger\PgoCallStackPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="callstack.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

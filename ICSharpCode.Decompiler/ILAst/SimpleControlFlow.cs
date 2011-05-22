@@ -267,7 +267,8 @@ namespace ICSharpCode.Decompiler.ILAst
 			if(!head.MatchLastAndBr(ILCode.Brtrue, out exitLabel, out callExpr, out followingBlock))
 				return false;
 			
-			MethodDefinition opFalse;
+			//MethodDefinition opFalse;
+            MethodReference opFalse;
 			ILExpression leftVar;
 			if (!callExpr.Match(ILCode.Call, out opFalse, out leftVar))
 				return false;
