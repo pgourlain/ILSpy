@@ -5,7 +5,27 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" Loaded="UserControl_Loaded">
+    <UserControl.Resources>
+        <Style x:Key="itemstyle" TargetType="{x:Type ListViewItem}">
+            <EventSetter Event="MouseDoubleClick" Handler="HandleDoubleClick" />
+        </Style>
+    </UserControl.Resources>
     <Grid>
-            
+        <Grid.Resources>
+            <DataTemplate x:Key="lvItemTemplate">
+                
+            </DataTemplate>
+        </Grid.Resources>
+        <ListView ItemsSource="{Binding CurrentCallStack}" 
+                  ItemTemplate="{StaticResource lvItemTemplate}" ItemContainerStyle="{StaticResource itemstyle}" 
+                  SelectedItem="{Binding SelectedItem}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="40" Header="Line" DisplayMemberBinding="{Binding SourceCodeLine}" />
+                    <GridViewColumn Header="Assembly" Width="Auto" DisplayMemberBinding="{Binding Assembly}"/>
+                    <GridViewColumn Header="Method" Width="Auto" DisplayMemberBinding="{Binding Method}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>            
     </Grid>
 </UserControl>

@@ -65,5 +65,10 @@ namespace PgoPlugin.Debugger
             this.DataContext = presenter;
             presenter.ViewReady();
         }
+
+        private void HandleDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            presenter.NagivateTo();
+        }
     }
 }

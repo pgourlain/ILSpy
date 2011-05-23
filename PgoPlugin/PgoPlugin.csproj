@@ -48,10 +48,12 @@
     <Compile Include="AddBookmark.cs" />
     <Compile Include="BookmarksCommand.cs" />
     <Compile Include="Debugger\CallStackCommand.cs" />
+    <Compile Include="Debugger\ObservableObject.cs" />
     <Compile Include="Debugger\PgoCallStackPane.xaml.cs">
       <DependentUpon>PgoCallStackPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Debugger\PgoCallStackPanePresenter.cs" />
+    <Compile Include="Debugger\StackViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -63,9 +65,17 @@
       <Project>{6D3D0F0D-348D-456A-A6ED-E9BD5EFABB6A}</Project>
       <Name>ILSpy.Debugger</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
+      <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
+      <Name>ICSharpCode.Decompiler</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ILSpy\ILSpy.csproj">
       <Project>{1E85EFF9-E370-4683-83E4-8A3D063FF791}</Project>
       <Name>ILSpy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
+      <Name>Mono.Cecil</Name>
     </ProjectReference>
     <ProjectReference Include="..\SharpTreeView\ICSharpCode.TreeView.csproj">
       <Project>{DDE2A481-8271-4EAC-A330-8FA6A38D13D1}</Project>
