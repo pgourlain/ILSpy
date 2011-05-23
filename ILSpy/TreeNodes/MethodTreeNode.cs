@@ -58,7 +58,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
         {
             if (method != null)
             {
-                return method.IsPublic;
+                return method.IsPublic || method.IsVirtual || method.IsFamily;
             }
             return true;
         }

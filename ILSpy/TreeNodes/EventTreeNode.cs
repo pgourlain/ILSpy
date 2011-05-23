@@ -119,7 +119,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
         {
             if (ev != null && ev.AddMethod != null)
             {
-                return ev.AddMethod.IsPublic;
+                return ev.AddMethod.IsPublic || ev.AddMethod.IsVirtual || ev.AddMethod.IsFamily;
             }
             return true;
         }

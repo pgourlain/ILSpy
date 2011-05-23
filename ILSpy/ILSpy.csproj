@@ -338,7 +338,6 @@
       <Name>ICSharpCode.TreeView</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Resource Include="Images\loading_14.gif" />
     <Resource Include="Images\loading_13.gif" />

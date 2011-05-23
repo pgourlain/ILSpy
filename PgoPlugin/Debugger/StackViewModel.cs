@@ -10,9 +10,10 @@ namespace PgoPlugin.Debugger
 {
     public class StackViewModel : ObservableObject
     {
-        // Stepping:
         static SourceCodeMapping GetCurrentCodeMapping(StackFrame frame, out bool isMatch)
         {
+            // it works only with the first frame
+
             isMatch = false;
             int key = frame.MethodInfo.MetadataToken;
             List<MemberMapping> mapping;

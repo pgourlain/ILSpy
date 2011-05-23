@@ -123,7 +123,7 @@ namespace ICSharpCode.ILSpy.XmlDoc
 		
 		static string GetLocalizedName(string fileName, string language)
 		{
-            if (string.IsNullOrEmpty(fileName))
+            if (string.IsNullOrWhiteSpace(fileName))
                 return null;
 			string localizedXmlDocFile = Path.GetDirectoryName(fileName);
 			localizedXmlDocFile = Path.Combine(localizedXmlDocFile, language);
