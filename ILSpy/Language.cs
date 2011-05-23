@@ -158,6 +158,13 @@ namespace ICSharpCode.ILSpy
 				throw new ArgumentNullException("property");
             return AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property);
 		}
+		
+		public virtual string FormatTypeName(TypeDefinition type)
+		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+			return type.Name;
+		}
 
 		/// <summary>
 		/// Used for WPF keyboard navigation.
