@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ICSharpCode.ILSpy;
 
-namespace PgoPlugin
+namespace PgoPlugin.Bookmarks
 {
 
     [ExportContextMenuEntry(Header = "_Add Bookmark", Icon="addbookmark.png")]
@@ -24,7 +24,25 @@ namespace PgoPlugin
 
         public void Execute(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
         {
-            throw new NotImplementedException();
+            foreach (var item in selectedNodes)
+            {
+                var path = Path(item);
+                System.Windows.MessageBox.Show(path);
+            }
+        }
+
+        private string Path(ICSharpCode.TreeView.SharpTreeNode item)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            while (!item.IsRoot)
+            {
+                if (sb.Length > 0)
+                    sb.Insert(0, "/");
+                sb.Insert(0, item.Text);
+                item = item.Parent;
+            }
+            return sb.ToString();
         }
 
         #endregion

@@ -352,5 +352,8 @@
     <Resource Include="Images\ResourceXsd.png" />
     <Resource Include="Images\ResourceXslt.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\loading_13.gif" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

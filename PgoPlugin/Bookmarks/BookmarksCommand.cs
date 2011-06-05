@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ICSharpCode.ILSpy;
 
-namespace PgoPlugin
+namespace PgoPlugin.Bookmarks
 {
 
     // Menu: menu into which the item is added
@@ -22,7 +22,7 @@ namespace PgoPlugin
     {
         public override void Execute(object parameter)
         {
-            throw new NotImplementedException();
+            SingletonPane<PgoBookmarksPane>.Instance.Show();
         }
     }
 }

@@ -21,21 +21,6 @@ namespace PgoPlugin.Debugger
     /// </summary>
     public partial class PgoCallStackPane : UserControl, IPane
     {
-        static PgoCallStackPane instance;
-
-        public static PgoCallStackPane Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    App.Current.VerifyAccess();
-                    instance = new PgoCallStackPane();
-                }
-                return instance;
-            }
-        }
-
         PgoCallStackPanePresenter presenter = new PgoCallStackPanePresenter();
 
         public void Show()
@@ -47,7 +32,7 @@ namespace PgoPlugin.Debugger
             //    new Func<bool>(searchBox.Focus));
         }
 
-        private PgoCallStackPane()
+        public PgoCallStackPane()
         {
             InitializeComponent();
         }

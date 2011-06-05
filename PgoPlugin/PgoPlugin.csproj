@@ -45,8 +45,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddBookmark.cs" />
-    <Compile Include="BookmarksCommand.cs" />
+    <Compile Include="Bookmarks\AddBookmark.cs" />
+    <Compile Include="Bookmarks\BookmarksCommand.cs" />
+    <Compile Include="Bookmarks\PgoBookmarksPane.xaml.cs">
+      <DependentUpon>PgoBookmarksPane.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Debugger\CallStackCommand.cs" />
     <Compile Include="Debugger\ObservableObject.cs" />
     <Compile Include="Debugger\PgoCallStackPane.xaml.cs">
@@ -55,6 +58,7 @@
     <Compile Include="Debugger\PgoCallStackPanePresenter.cs" />
     <Compile Include="Debugger\StackViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SingletonPane.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Debugger\Debugger.Core\Debugger.Core.csproj">
@@ -89,6 +93,10 @@
     <Resource Include="addbookmark.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Bookmarks\PgoBookmarksPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Debugger\PgoCallStackPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -97,6 +105,7 @@
   <ItemGroup>
     <Resource Include="callstack.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

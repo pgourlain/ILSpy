@@ -12,7 +12,7 @@ namespace PgoPlugin.Debugger
     {
         public override void Execute(object parameter)
         {
-            PgoCallStackPane.Instance.Show();
+            SingletonPane<PgoCallStackPane>.Instance.Show();
         }
 
         public override bool CanExecute(object parameter)
