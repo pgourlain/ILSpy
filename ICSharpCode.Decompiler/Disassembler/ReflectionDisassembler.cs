@@ -124,7 +124,7 @@ namespace ICSharpCode.Decompiler.Disassembler
 			
 			if ((method.Attributes & MethodAttributes.PInvokeImpl) == MethodAttributes.PInvokeImpl) {
 				output.Write("pinvokeimpl");
-				if (method.HasPInvokeInfo) {
+				if (method.HasPInvokeInfo && method.PInvokeInfo != null) {
 					PInvokeInfo info = method.PInvokeInfo;
 					output.Write("(\"" + NRefactory.CSharp.OutputVisitor.ConvertString(info.Module.Name) + "\"");
 					
@@ -204,16 +204,13 @@ namespace ICSharpCode.Decompiler.Disassembler
 			WriteFlags(method.ImplAttributes & ~(MethodImplAttributes.CodeTypeMask | MethodImplAttributes.ManagedMask), methodImpl);
 			
 			output.Unindent();
-			if (method.HasBody || method.HasCustomAttributes) {
-				OpenBlock(defaultCollapsed: isInType);
-				WriteAttributes(method.CustomAttributes);
-				
-				if (method.HasBody) {
-					// create IL code mappings - used in debugger
-					CreateCodeMappings(method.MetadataToken.ToInt32(), currentMember);
-					MemberMapping methodMapping = method.CreateCodeMapping(this.CodeMappings[method.MetadataToken.ToInt32()], currentMember);
-					
-					methodBodyDisassembler.Disassemble(method.Body, methodMapping);
+			OpenBlock(defaultCollapsed: isInType);
+			WriteAttributes(method.CustomAttributes);
+			if (method.HasOverrides) {
+				foreach (var methodOverride in method.Overrides) {
+					output.Write(".override method ");
+					methodOverride.WriteTo(output);
+					output.WriteLine();
 				}
 			}
 			foreach (var p in method.Parameters) {
@@ -221,11 +218,12 @@ namespace ICSharpCode.Decompiler.Disassembler
 			}
 			WriteSecurityDeclarations(method);
 			
-            //if (method.HasBody) {
-            //    // create IL code mappings - used in debugger
-            //    MemberMapping methodMapping = method.CreateCodeMapping(this.CodeMappings[method.MetadataToken.ToInt32()], currentMember);
-            //    methodBodyDisassembler.Disassemble(method.Body, methodMapping);
-            //}
+			if (method.HasBody) {
+				// create IL code mappings - used in debugger
+				CreateCodeMappings(method.MetadataToken.ToInt32(), currentMember);
+				MemberMapping methodMapping = method.CreateCodeMapping(this.CodeMappings[method.MetadataToken.ToInt32()], currentMember);
+				methodBodyDisassembler.Disassemble(method.Body, methodMapping);
+			}
 			
 			CloseBlock("end of method " + DisassemblerHelpers.Escape(method.DeclaringType.Name) + "::" + DisassemblerHelpers.Escape(method.Name));
 		}
@@ -1156,11 +1154,5 @@ namespace ICSharpCode.Decompiler.Disassembler
 				output.WriteLine();
 			}
 		}
-		
-        ///// <inheritdoc/>
-        //public Tuple<string, List<MemberMapping>> CodeMappings {
-        //    get;
-        //    private set;
-        //}
 	}
 }

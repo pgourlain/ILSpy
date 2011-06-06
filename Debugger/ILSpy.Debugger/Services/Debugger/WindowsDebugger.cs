@@ -12,6 +12,7 @@ using Debugger;
 using Debugger.Interop.CorPublish;
 using Debugger.MetaData;
 using ICSharpCode.Decompiler;
+using ICSharpCode.ILSpy.Bookmarks;
 using ICSharpCode.ILSpy.Debugger.Bookmarks;
 using ICSharpCode.ILSpy.Debugger.Models.TreeModel;
 using ICSharpCode.ILSpy.Debugger.Services.Debugger;
@@ -282,6 +283,9 @@ namespace ICSharpCode.ILSpy.Debugger.Services
 			int key = frame.MethodInfo.MetadataToken;
 			
 			// get the mapped instruction from the current line marker or the next one
+			if (!DebugData.CodeMappings.ContainsKey(key))
+				return null;
+			
 			return DebugData.CodeMappings[key].GetInstructionByTokenAndOffset(key, frame.IP, out isMatch);
 		}
 		

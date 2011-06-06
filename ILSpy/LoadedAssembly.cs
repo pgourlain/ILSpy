@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
+using ICSharpCode.ILSpy.Options;
 using Mono.Cecil;
 
 namespace ICSharpCode.ILSpy
@@ -169,6 +170,11 @@ namespace ICSharpCode.ILSpy
 				var node = parent.LookupReferencedAssembly(fullName);
 				return node != null ? node.AssemblyDefinition : null;
 			}
+		}
+		
+		public IAssemblyResolver GetAssemblyResolver()
+		{
+			return new MyAssemblyResolver(this);
 		}
 		
 		public LoadedAssembly LookupReferencedAssembly(string fullName)

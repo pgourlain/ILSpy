@@ -100,16 +100,37 @@
     </Compile>
     <Compile Include="AssemblyList.cs" />
     <Compile Include="AssemblyListManager.cs" />
+    <Compile Include="AvalonEdit\ITextEditorListener.cs" />
+    <Compile Include="AvalonEdit\IToolTip.cs" />
+    <Compile Include="Bookmarks\BreakpointBookmark.cs" />
+    <Compile Include="Bookmarks\BreakpointBookmarkEventArgs.cs" />
+    <Compile Include="Bookmarks\CurrentLineBookmark.cs" />
+    <Compile Include="Commands\BrowseBackCommand.cs" />
+    <Compile Include="Commands\BrowseForwardCommand.cs" />
+    <Compile Include="AvalonEdit\IconBarManager.cs" />
+    <Compile Include="AvalonEdit\IconBarMargin.cs" />
+    <Compile Include="AvalonEdit\IconMarginActionsProvider.cs" />
+    <Compile Include="AvalonEdit\TextMarkerService.cs" />
+    <Compile Include="AvalonEdit\TextEditorWeakEventManager.cs" />
+    <Compile Include="AvalonEdit\ITextMarker.cs" />
+    <Compile Include="Bookmarks\BookmarkBase.cs" />
+    <Compile Include="Bookmarks\BookmarkEventHandler.cs" />
+    <Compile Include="Bookmarks\BookmarkManager.cs" />
+    <Compile Include="Bookmarks\Commands.cs" />
+    <Compile Include="Bookmarks\MemberBookmark.cs" />
+    <Compile Include="Bookmarks\IBookmark.cs" />
+    <Compile Include="Bookmarks\MarkerBookmark.cs" />
     <Compile Include="CommandLineArguments.cs" />
-    <Compile Include="Commands.cs" />
+    <Compile Include="Commands\ExitCommand.cs" />
+    <Compile Include="Commands\CommandWrapper.cs" />
     <Compile Include="ConnectMethodDecompiler.cs" />
     <Compile Include="Controls\DockedPane.cs" />
-    <Compile Include="DisplaySettings.cs" />
-    <Compile Include="ExportCommandAttribute.cs" />
-    <Compile Include="Commands\DebuggerCommands.cs" />
+    <Compile Include="Commands\DecompileAllCommand.cs" />
+    <Compile Include="Commands\ExportCommandAttribute.cs" />
     <Compile Include="Controls\SearchBox.cs" />
     <Compile Include="Controls\SortableGridViewColumn.cs" />
-    <Compile Include="CSharpLanguage.cs" />
+    <Compile Include="DebuggedData.cs" />
+    <Compile Include="Languages\CSharpLanguage.cs" />
     <Compile Include="DecompilationOptions.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FilterSettings.cs" />
@@ -117,15 +138,17 @@
     <Compile Include="GacInterop.cs" />
     <Compile Include="GuessFileType.cs" />
     <Compile Include="ContextMenuEntry.cs" />
-    <Compile Include="ILAstLanguage.cs" />
-    <Compile Include="ILLanguage.cs" />
+    <Compile Include="Languages\ILAstLanguage.cs" />
+    <Compile Include="Languages\ILLanguage.cs" />
     <Compile Include="ILSpySettings.cs" />
     <Compile Include="Images\AccessOverlayIcon.cs" />
     <Compile Include="Images\MemberIcon.cs" />
     <Compile Include="Images\TypeIcon.cs" />
+    <Compile Include="IPane.cs" />
     <Compile Include="ISmartTextOutput.cs" />
-    <Compile Include="Language.cs" />
+    <Compile Include="Languages\Language.cs" />
     <Compile Include="Images\Images.cs" />
+    <Compile Include="Languages\Languages.cs" />
     <Compile Include="LoadedAssembly.cs" />
     <Compile Include="MainWindowSplashScreen.xaml.cs">
       <DependentUpon>MainWindowSplashScreen.xaml</DependentUpon>
@@ -133,16 +156,19 @@
     <Compile Include="NativeMethods.cs" />
     <Compile Include="NavigationHistory.cs" />
     <Compile Include="NavigationState.cs" />
+    <Compile Include="Commands\OpenCommand.cs" />
+    <Compile Include="Commands\OpenFromGacCommand.cs" />
     <Compile Include="OpenFromGacDialog.xaml.cs">
       <DependentUpon>OpenFromGacDialog.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Options\DebuggerSettingsPanel.xaml.cs">
-      <DependentUpon>DebuggerSettingsPanel.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Options\DecompilerSettingsPanel.xaml.cs">
       <DependentUpon>DecompilerSettingsPanel.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Options\DisplaySettings.cs" />
+    <Compile Include="Options\DisplaySettingsPanel.xaml.cs">
+      <DependentUpon>DisplaySettingsPanel.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Options\OptionsDialog.xaml.cs">
@@ -151,13 +177,13 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplashScreen.cs" />
+    <Compile Include="Commands\RefreshCommand.cs" />
+    <Compile Include="Commands\SaveCommand.cs" />
     <Compile Include="SearchPane.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DisplaySettingsPanel.xaml.cs">
-      <DependentUpon>DisplaySettingsPanel.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Commands\SimpleCommand.cs" />
+    <Compile Include="Commands\ShowAnalyzerCommand.cs" />
     <Compile Include="TreeNodes\Analyzer\AnalyzeContextMenuEntry.cs" />
     <Compile Include="TreeNodes\Analyzer\AnalyzedEventOverridesTreeNode.cs" />
     <Compile Include="TreeNodes\Analyzer\AnalyzedEventTreeNode.cs" />
@@ -174,6 +200,9 @@
     <Compile Include="TreeNodes\Analyzer\AnalyzedVirtualMethodUsedByTreeNode.cs" />
     <Compile Include="TreeNodes\Analyzer\Helpers.cs" />
     <Compile Include="TreeNodes\Analyzer\ScopedWhereUsedAnalyzer.cs" />
+    <Compile Include="TreeNodes\BaseTypesEntryNode.cs" />
+    <Compile Include="TreeNodes\DerivedTypesEntryNode.cs" />
+    <Compile Include="TreeNodes\FilterResult.cs" />
     <Compile Include="TreeNodes\IMemberTreeNode.cs" />
     <Compile Include="TreeNodes\ResourceNodes\CursorResourceEntryNode.cs" />
     <Compile Include="TreeNodes\ResourceNodes\ImageResourceEntryNode.cs" />
@@ -207,6 +236,8 @@
     <Resource Include="Images\ILSpy.ico" />
     <Resource Include="Images\FindAssembly.png" />
     <None Include="app.config" />
+    <Resource Include="Images\Breakpoint.png" />
+    <Resource Include="Images\CurrentLine.png" />
     <None Include="Properties\AssemblyInfo.template.cs" />
     <Compile Include="Properties\WPFAssemblyInfo.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -257,13 +288,12 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OpenFromGacDialog.xaml" />
-    <Page Include="Options\DebuggerSettingsPanel.xaml" />
     <Page Include="Options\DecompilerSettingsPanel.xaml" />
+    <Page Include="Options\DisplaySettingsPanel.xaml" />
     <Page Include="Options\OptionsDialog.xaml" />
     <Page Include="SearchPane.xaml">
       <DependentUpon>SearchPane.cs</DependentUpon>
     </Page>
-    <Page Include="DisplaySettingsPanel.xaml" />
     <Page Include="TextView\DecompilerTextView.xaml">
       <DependentUpon>DecompilerTextView.cs</DependentUpon>
     </Page>
@@ -314,10 +344,6 @@
     <Resource Include="Images\PInvokeMethod.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Debugger\ILSpy.Debugger\ILSpy.Debugger.csproj">
-      <Project>{6D3D0F0D-348D-456A-A6ED-E9BD5EFABB6A}</Project>
-      <Name>ILSpy.Debugger</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
       <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
       <Name>ICSharpCode.Decompiler</Name>
@@ -354,6 +380,14 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\loading_13.gif" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="AvalonEdit" />
+    <Folder Include="Bookmarks" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Options" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

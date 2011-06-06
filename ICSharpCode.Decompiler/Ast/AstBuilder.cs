@@ -1161,7 +1161,7 @@ namespace ICSharpCode.Decompiler.Ast
 			MethodImplAttributes implAttributes = methodDefinition.ImplAttributes & ~MethodImplAttributes.CodeTypeMask;
 			
 			#region DllImportAttribute
-			if (methodDefinition.HasPInvokeInfo) {
+			if (methodDefinition.HasPInvokeInfo && methodDefinition.PInvokeInfo != null) {
 				PInvokeInfo info = methodDefinition.PInvokeInfo;
 				Ast.Attribute dllImport = CreateNonCustomAttribute(typeof(DllImportAttribute));
 				dllImport.Arguments.Add(new PrimitiveExpression(info.Module.Name));
@@ -1511,13 +1511,13 @@ namespace ICSharpCode.Decompiler.Ast
 			{ // cannot rely on type.IsValueType, it's not set for typerefs (but is set for typespecs)
 				TypeDefinition enumDefinition = type.Resolve();
 				if (enumDefinition != null && enumDefinition.IsEnum) {
+					TypeCode enumBaseTypeCode = TypeCode.Int32;
 					foreach (FieldDefinition field in enumDefinition.Fields) {
 						if (field.IsStatic && object.Equals(CSharpPrimitiveCast.Cast(TypeCode.Int64, field.Constant, false), val))
-                            return ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
+                            return ConvertType(type).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
 						else if (!field.IsStatic && field.IsRuntimeSpecialName)
-							type = field.FieldType; // use primitive type of the enum
+							enumBaseTypeCode = TypeAnalysis.GetTypeCode(field.FieldType); // use primitive type of the enum
 					}
-					TypeCode enumBaseTypeCode = TypeAnalysis.GetTypeCode(type);
 					if (IsFlagsEnum(enumDefinition)) {
 						long enumValue = val;
 						Expression expr = null;
@@ -1544,7 +1544,7 @@ namespace ICSharpCode.Decompiler.Ast
 								continue;	// skip None enum value
 
 							if ((fieldValue & enumValue) == fieldValue) {
-                                var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
+                                var fieldExpression = ConvertType(type).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
 								if (expr == null)
 									expr = fieldExpression;
 								else
@@ -1553,7 +1553,7 @@ namespace ICSharpCode.Decompiler.Ast
 								enumValue &= ~fieldValue;
 							}
 							if ((fieldValue & negatedEnumValue) == fieldValue) {
-                                var fieldExpression = ConvertType(enumDefinition).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
+                                var fieldExpression = ConvertType(type).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
 								if (negatedExpr == null)
 									negatedExpr = fieldExpression;
 								else
@@ -1571,7 +1571,7 @@ namespace ICSharpCode.Decompiler.Ast
 							return new UnaryOperatorExpression(UnaryOperatorType.BitNot, negatedExpr);
 						}
 					}
-					return new Ast.PrimitiveExpression(CSharpPrimitiveCast.Cast(enumBaseTypeCode, val, false)).CastTo(ConvertType(enumDefinition));
+					return new Ast.PrimitiveExpression(CSharpPrimitiveCast.Cast(enumBaseTypeCode, val, false)).CastTo(ConvertType(type));
 				}
 			}
 			TypeCode code = TypeAnalysis.GetTypeCode(type);
