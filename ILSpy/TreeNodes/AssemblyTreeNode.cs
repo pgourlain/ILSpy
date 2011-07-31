@@ -140,6 +140,9 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			get { return true; }
 		}
 
+		/// <summary>
+		/// Finds the node for a top-level type.
+		/// </summary>
 		public TypeTreeNode FindTypeNode(TypeDefinition def)
 		{
 			if (def == null)
@@ -152,6 +155,21 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				return null;
 		}
 
+		/// <summary>
+		/// Finds the node for a namespace.
+		/// </summary>
+		public NamespaceTreeNode FindNamespaceNode(string namespaceName)
+		{
+			if (string.IsNullOrEmpty(namespaceName))
+				return null;
+			EnsureLazyChildren();
+			NamespaceTreeNode node;
+			if (namespaces.TryGetValue(namespaceName, out node))
+				return node;
+			else
+				return null;
+		}
+		
 		public override bool CanDrag(SharpTreeNode[] nodes)
 		{
 			return nodes.All(n => n is AssemblyTreeNode);
@@ -196,7 +214,17 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
 		{
-			assembly.WaitUntilLoaded(); // necessary so that load errors are passed on to the caller
+			try {
+				assembly.WaitUntilLoaded(); // necessary so that load errors are passed on to the caller
+			} catch (AggregateException ex) {
+				language.WriteCommentLine(output, assembly.FileName);
+				if (ex.InnerException is BadImageFormatException) {
+					language.WriteCommentLine(output, "This file does not contain a managed assembly.");
+					return;
+				} else {
+					throw;
+				}
+			}
 			language.DecompileAssembly(assembly, output, options);
 		}
 

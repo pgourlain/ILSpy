@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Debugger;
 using ICSharpCode.Decompiler;
-using ICSharpCode.ILSpy.Debugger;
+//using ICSharpCode.ILSpy.Debugger;
 
 namespace PgoPlugin.Debugger
 {
@@ -12,16 +12,16 @@ namespace PgoPlugin.Debugger
     {
         static SourceCodeMapping GetCurrentCodeMapping(StackFrame frame, out bool isMatch)
         {
-            // it works only with the first frame
+            //// it works only with the first frame
 
             isMatch = false;
-            int key = frame.MethodInfo.MetadataToken;
-            List<MemberMapping> mapping;
-            // get the mapped instruction from the current line marker or the next one
-            if (DebugData.CodeMappings.TryGetValue(key, out mapping))
-            {
-                return mapping.GetInstructionByTokenAndOffset(key, frame.IP, out isMatch);
-            }
+            //int key = frame.MethodInfo.MetadataToken;
+            //List<MemberMapping> mapping;
+            //// get the mapped instruction from the current line marker or the next one
+            //if (DebugData.CodeMappings.TryGetValue(key, out mapping))
+            //{
+            //    return mapping.GetInstructionByTokenAndOffset(key, frame.IP, out isMatch);
+            //}
             return null;
         }
 

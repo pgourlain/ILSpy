@@ -18,7 +18,7 @@ namespace PgoPlugin.Debugger
         public override bool CanExecute(object parameter)
         {
             //return ICSharpCode.ILSpy.Debugger.Services.DebuggerService.CurrentDebugger.IsDebugging;
-            return true;
+            return false;
         }
     }
 }

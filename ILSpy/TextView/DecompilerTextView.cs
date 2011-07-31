@@ -75,7 +75,7 @@ namespace ICSharpCode.ILSpy.TextView
 		readonly TextMarkerService textMarkerService;
 		
 		[ImportMany(typeof(ITextEditorListener))]
-		IEnumerable<ITextEditorListener> textEditorListeners;
+		IEnumerable<ITextEditorListener> textEditorListeners = null;
 		
 		#region Constructor
 		public DecompilerTextView()
@@ -456,7 +456,7 @@ namespace ICSharpCode.ILSpy.TextView
 					int ilOffset = DebugInformation.DebugStepInformation.Item2;
 					int line;
 					MemberReference member;
-					if (!DebugInformation.CodeMappings.ContainsKey(token))
+					if (DebugInformation.CodeMappings == null || !DebugInformation.CodeMappings.ContainsKey(token))
 						return;
 					
 					DebugInformation.CodeMappings[token].GetInstructionByTokenAndOffset(token, ilOffset, out member, out line);
@@ -547,7 +547,7 @@ namespace ICSharpCode.ILSpy.TextView
 		void Language_DecompileFinished(object sender, DecompileEventArgs e)
 		{
 			if (e != null) {
-				manager.UpdateClassMemberBookmarks(e.AstNodes);
+				manager.UpdateClassMemberBookmarks(e.AstNodes, typeof(TypeBookmark), typeof(MemberBookmark));
 				if (iconMargin.DecompiledMembers == null) {
 					iconMargin.DecompiledMembers = new List<MemberReference>();
 				}
@@ -565,7 +565,7 @@ namespace ICSharpCode.ILSpy.TextView
 						DebugInformation.LocalVariables.AddRange(e.LocalVariables);
 				}
 			} else {
-				manager.UpdateClassMemberBookmarks(null);
+				manager.UpdateClassMemberBookmarks(null, typeof(TypeBookmark), typeof(MemberBookmark));
 			}
 		}
 

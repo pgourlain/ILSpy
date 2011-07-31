@@ -24,5 +24,10 @@ namespace PgoPlugin.Bookmarks
         {
             SingletonPane<PgoBookmarksPane>.Instance.Show();
         }
+
+        public override bool CanExecute(object parameter)
+        {
+            return false;
+        }
     }
 }

@@ -41,6 +41,8 @@ namespace ICSharpCode.ILSpy
 		/// <summary>Dirty flag, used to mark modifications so that the list is saved later</summary>
 		bool dirty;
 		
+		internal readonly ConcurrentDictionary<string, LoadedAssembly> assemblyLookupCache = new ConcurrentDictionary<string, LoadedAssembly>();
+		
 		/// <summary>
 		/// The assemblies in this list.
 		/// Needs locking for multi-threaded access!
@@ -101,6 +103,7 @@ namespace ICSharpCode.ILSpy
 		
 		void Assemblies_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			assemblyLookupCache.Clear();
 			// Whenever the assembly list is modified, mark it as dirty
 			// and enqueue a task that saves it once the UI has finished modifying the assembly list.
 			if (!dirty) {
@@ -111,6 +114,7 @@ namespace ICSharpCode.ILSpy
 						delegate {
 							dirty = false;
 							AssemblyListManager.SaveList(this);
+							assemblyLookupCache.Clear();
 						})
 				);
 			}
@@ -144,6 +148,20 @@ namespace ICSharpCode.ILSpy
 			lock (assemblies) {
 				assemblies.Remove(assembly);
 			}
+			RequestGC();
+		}
+		
+		static bool gcRequested;
+		
+		void RequestGC()
+		{
+			if (gcRequested) return;
+			gcRequested = true;
+			App.Current.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(
+				delegate {
+					gcRequested = false;
+					GC.Collect();
+				}));
 		}
 		
 		public void Sort(IComparer<LoadedAssembly> comparer)

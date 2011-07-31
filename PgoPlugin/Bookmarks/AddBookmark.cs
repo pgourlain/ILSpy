@@ -14,12 +14,12 @@ namespace PgoPlugin.Bookmarks
 
         public bool IsVisible(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
         {
-            return true;
+            return false;
         }
 
         public bool IsEnabled(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
         {
-            return true;
+            return false;
         }
 
         public void Execute(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)

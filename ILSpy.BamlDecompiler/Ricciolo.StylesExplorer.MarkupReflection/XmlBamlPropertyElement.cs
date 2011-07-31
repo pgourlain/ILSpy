@@ -11,8 +11,7 @@ namespace Ricciolo.StylesExplorer.MarkupReflection
 	{
 		private readonly PropertyType _propertyType;
 		private PropertyDeclaration propertyDeclaration;
-
-
+		
 		public XmlBamlPropertyElement(PropertyType propertyType, PropertyDeclaration propertyDeclaration)
 		{
 			_propertyType = propertyType;
@@ -42,7 +41,7 @@ namespace Ricciolo.StylesExplorer.MarkupReflection
 
 		public override string ToString()
 		{
-			return String.Format("PropertyElement: {0}.{1}", TypeDeclaration.Name, PropertyDeclaration.Name);
+			return String.Format("PropertyElement: {0}.{1}", TypeDeclaration.Name.Replace('+', '.'), PropertyDeclaration.Name);
 		}
 	}
 }

@@ -51,7 +51,7 @@ namespace ICSharpCode.ILSpy
 		ILSpySettings spySettings;
 		internal SessionSettings sessionSettings;
 
-		AssemblyListManager assemblyListManager;
+		internal AssemblyListManager assemblyListManager;
 		AssemblyList assemblyList;
 		AssemblyListTreeNode assemblyListTreeNode;
 		
@@ -208,6 +208,8 @@ namespace ICSharpCode.ILSpy
 					}
 					var args = new CommandLineArguments(lines);
 					if (HandleCommandLineArguments(args)) {
+						if (!args.NoActivate && WindowState == WindowState.Minimized)
+							WindowState = WindowState.Normal;
 						HandleCommandLineArgumentsAfterShowList(args);
 						handled = true;
 						return (IntPtr)1;
@@ -221,6 +223,8 @@ namespace ICSharpCode.ILSpy
 		public AssemblyList CurrentAssemblyList {
 			get { return assemblyList; }
 		}
+		
+		public event NotifyCollectionChangedEventHandler CurrentAssemblyListChanged;
 		
 		List<LoadedAssembly> commandLineLoadedAssemblies = new List<LoadedAssembly>();
 		
@@ -238,14 +242,29 @@ namespace ICSharpCode.ILSpy
 		{
 			if (args.NavigateTo != null) {
 				bool found = false;
-				foreach (LoadedAssembly asm in commandLineLoadedAssemblies) {
-					AssemblyDefinition def = asm.AssemblyDefinition;
-					if (def != null) {
-						MemberReference mr = XmlDocKeyProvider.FindMemberByKey(def.MainModule, args.NavigateTo);
-						if (mr != null) {
-							found = true;
-							JumpToReference(mr);
-							break;
+				if (args.NavigateTo.StartsWith("N:", StringComparison.Ordinal)) {
+					string namespaceName = args.NavigateTo.Substring(2);
+					foreach (LoadedAssembly asm in commandLineLoadedAssemblies) {
+						AssemblyTreeNode asmNode = assemblyListTreeNode.FindAssemblyNode(asm);
+						if (asmNode != null) {
+							NamespaceTreeNode nsNode = asmNode.FindNamespaceNode(namespaceName);
+							if (nsNode != null) {
+								found = true;
+								SelectNode(nsNode);
+								break;
+							}
+						}
+					}
+				} else {
+					foreach (LoadedAssembly asm in commandLineLoadedAssemblies) {
+						AssemblyDefinition def = asm.AssemblyDefinition;
+						if (def != null) {
+							MemberReference mr = XmlDocKeyProvider.FindMemberByKey(def.MainModule, args.NavigateTo);
+							if (mr != null) {
+								found = true;
+								JumpToReference(mr);
+								break;
+							}
 						}
 					}
 				}
@@ -319,6 +338,21 @@ namespace ICSharpCode.ILSpy
 		}
 		#endregion
 		
+		public void ShowAssemblyList(string name)
+		{
+			ILSpySettings settings = this.spySettings;
+			if (settings == null)
+			{
+				settings = ILSpySettings.Load();
+			}
+			AssemblyList list = this.assemblyListManager.LoadList(settings, name);
+			//Only load a new list when it is a different one
+			if (list.ListName != CurrentAssemblyList.ListName)
+			{
+				ShowAssemblyList(list);
+			}
+		}
+
 		void ShowAssemblyList(AssemblyList assemblyList)
 		{
 			history.Clear();
@@ -339,9 +373,17 @@ namespace ICSharpCode.ILSpy
 
 		void assemblyList_Assemblies_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null)
-				foreach (LoadedAssembly asm in e.OldItems)
-					history.RemoveAll(n => n.TreeNodes.Any(nd => nd.AncestorsAndSelf().OfType<AssemblyTreeNode>().Any(a => a.LoadedAssembly == asm)));
+			if (e.Action == NotifyCollectionChangedAction.Reset) {
+				history.RemoveAll(_ => true);
+			}
+			if (e.OldItems != null) {
+				var oldAssemblies = new HashSet<LoadedAssembly>(e.OldItems.Cast<LoadedAssembly>());
+				history.RemoveAll(n => n.TreeNodes.Any(
+					nd => nd.AncestorsAndSelf().OfType<AssemblyTreeNode>().Any(
+						a => oldAssemblies.Contains(a.LoadedAssembly))));
+			}
+			if (CurrentAssemblyListChanged != null)
+				CurrentAssemblyListChanged(this, e);
 		}
 		
 		void LoadInitialAssemblies()
@@ -392,9 +434,16 @@ namespace ICSharpCode.ILSpy
 		internal void SelectNode(SharpTreeNode obj)
 		{
 			if (obj != null) {
-				// Set both the selection and focus to ensure that keyboard navigation works as expected.
-				treeView.FocusNode(obj);
-				treeView.SelectedItem = obj;
+				if (!obj.AncestorsAndSelf().Any(node => node.IsHidden)) {
+					// Set both the selection and focus to ensure that keyboard navigation works as expected.
+					treeView.FocusNode(obj);
+					treeView.SelectedItem = obj;
+				} else {
+					MessageBox.Show("Navigation failed because the target is hidden or a compiler-generated class.\n" +
+					                "Please disable all filters that might hide the item (i.e. activate " +
+					                "\"View > Show internal types and members\") and try again.",
+					                "ILSpy", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+				}
 			}
 		}
 		
@@ -706,6 +755,8 @@ namespace ICSharpCode.ILSpy
 		
 		public void SetStatus(string status, Brush foreground)
 		{
+			if (this.statusBar.Visibility == Visibility.Collapsed)
+				this.statusBar.Visibility = Visibility.Visible;
 			this.StatusLabel.Foreground = foreground;
 			this.StatusLabel.Text = status;
 		}

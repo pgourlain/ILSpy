@@ -58,16 +58,14 @@
     <Compile Include="Debugger\PgoCallStackPanePresenter.cs" />
     <Compile Include="Debugger\StackViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReloadAssembly\ReloadAssemblyCommand.cs" />
     <Compile Include="SingletonPane.cs" />
+    <Compile Include="SortAssembly\SortAssembliesCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Debugger\Debugger.Core\Debugger.Core.csproj">
       <Project>{1D18D788-F7EE-4585-A23B-34DC8EC63CB8}</Project>
       <Name>Debugger.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Debugger\ILSpy.Debugger\ILSpy.Debugger.csproj">
-      <Project>{6D3D0F0D-348D-456A-A6ED-E9BD5EFABB6A}</Project>
-      <Name>ILSpy.Debugger</Name>
     </ProjectReference>
     <ProjectReference Include="..\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
       <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
@@ -105,7 +103,15 @@
   <ItemGroup>
     <Resource Include="callstack.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="sort.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="sortd.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="refresh.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

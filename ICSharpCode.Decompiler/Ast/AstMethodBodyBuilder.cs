@@ -95,7 +95,7 @@ namespace ICSharpCode.Decompiler.Ast
 			context.CancellationToken.ThrowIfCancellationRequested();
 			ILBlock ilMethod = new ILBlock();
 			ILAstBuilder astBuilder = new ILAstBuilder();
-			ilMethod.Body = astBuilder.Build(methodDef, true);
+			ilMethod.Body = astBuilder.Build(methodDef, true, context);
 			
 			context.CancellationToken.ThrowIfCancellationRequested();
 			ILAstOptimizer bodyGraph = new ILAstOptimizer();
@@ -260,6 +260,9 @@ namespace ICSharpCode.Decompiler.Ast
 				result = node;
 			
 			if (result != null)
+				result = result.WithAnnotation(new TypeInformation(expr.InferredType));
+			
+			if (result != null)
 				return result.WithAnnotation(ilRanges);
 			
 			return result;
@@ -350,8 +353,7 @@ namespace ICSharpCode.Decompiler.Ast
 					}
 					#endregion
 					#region Arrays
-				case ILCode.Newarr:
-					case ILCode.InitArray: {
+					case ILCode.Newarr: {
 						var ace = new Ast.ArrayCreateExpression();
 						ace.Type = operandAsTypeRef;
 						ComposedType ct = operandAsTypeRef as ComposedType;
@@ -365,6 +367,38 @@ namespace ICSharpCode.Decompiler.Ast
 						} else {
 							ace.Arguments.Add(arg1);
 						}
+						return ace;
+					}
+					case ILCode.InitArray: {
+						var ace = new Ast.ArrayCreateExpression();
+						ace.Type = operandAsTypeRef;
+						ComposedType ct = operandAsTypeRef as ComposedType;
+						var arrayType = (ArrayType) operand;
+						if (ct != null)
+						{
+							// change "new (int[,])[10] to new int[10][,]"
+							ct.ArraySpecifiers.MoveTo(ace.AdditionalArraySpecifiers);
+							ace.Initializer = new ArrayInitializerExpression();
+							var first = ace.AdditionalArraySpecifiers.First();
+							first.Remove();
+							ace.Arguments.AddRange(Enumerable.Repeat(0, first.Dimensions).Select(i => new EmptyExpression()));
+						}
+						var newArgs = new List<Expression>();
+						foreach (var arrayDimension in arrayType.Dimensions.Skip(1).Reverse())
+						{
+							int length = (int)arrayDimension.UpperBound - (int)arrayDimension.LowerBound;
+							for (int j = 0; j < args.Count; j += length)
+							{
+								var child = new ArrayInitializerExpression();
+								child.Elements.AddRange(args.GetRange(j, length));
+								newArgs.Add(child);
+							}
+							var temp = args;
+							args = newArgs;
+							newArgs = temp;
+							newArgs.Clear();
+						}
+						ace.Initializer.Elements.AddRange(args);
 						return ace;
 					}
 					case ILCode.Ldlen: return arg1.Member("Length");
@@ -770,7 +804,13 @@ namespace ICSharpCode.Decompiler.Ast
 							}
 						}
 						ObjectCreateExpression oce = arg1 as ObjectCreateExpression;
+						DefaultValueExpression dve = arg1 as DefaultValueExpression;
 						if (oce != null) {
+							oce.Initializer = initializer;
+							return oce;
+						} else if (dve != null) {
+							oce = new ObjectCreateExpression(dve.Type.Detach());
+							oce.CopyAnnotationsFrom(dve);
 							oce.Initializer = initializer;
 							return oce;
 						} else {
@@ -888,14 +928,21 @@ namespace ICSharpCode.Decompiler.Ast
 					target = ((DirectionExpression)target).Expression;
 					target.Remove(); // detach from DirectionExpression
 				}
-				if (cecilMethodDef != null && cecilMethodDef.DeclaringType.IsInterface) {
-					TypeReference tr = byteCode.Arguments[0].InferredType;
-					if (tr != null) {
-						TypeDefinition td = tr.Resolve();
-						if (td != null && !td.IsInterface) {
-							// Calling an interface method on a non-interface object:
-							// we need to introduce an explicit cast
-							target = target.CastTo(AstBuilder.ConvertType(cecilMethod.DeclaringType));
+				
+				if (cecilMethodDef != null) {
+					// convert null.ToLower() to ((string)null).ToLower()
+					if (target is NullReferenceExpression)
+						target = target.CastTo(AstBuilder.ConvertType(cecilMethod.DeclaringType));
+					
+					if (cecilMethodDef.DeclaringType.IsInterface) {
+						TypeReference tr = byteCode.Arguments[0].InferredType;
+						if (tr != null) {
+							TypeDefinition td = tr.Resolve();
+							if (td != null && !td.IsInterface) {
+								// Calling an interface method on a non-interface object:
+								// we need to introduce an explicit cast
+								target = target.CastTo(AstBuilder.ConvertType(cecilMethod.DeclaringType));
+							}
 						}
 					}
 				}
@@ -984,7 +1031,8 @@ namespace ICSharpCode.Decompiler.Ast
 			// Convert 'ref' into 'out' where necessary
 			for (int i = 0; i < methodArgs.Count && i < cecilMethod.Parameters.Count; i++) {
 				DirectionExpression dir = methodArgs[i] as DirectionExpression;
-				if (dir != null && cecilMethod.Parameters[i].IsOut)
+				ParameterDefinition p = cecilMethod.Parameters[i];
+				if (dir != null && p.IsOut && !p.IsIn)
 					dir.FieldDirection = FieldDirection.Out;
 			}
 		}

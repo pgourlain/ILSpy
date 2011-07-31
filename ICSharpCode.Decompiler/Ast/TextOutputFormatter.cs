@@ -131,13 +131,14 @@ namespace ICSharpCode.Decompiler.Ast
 					output.Write("*/");
 					break;
 				case CommentType.Documentation:
-					if (!inDocumentationComment)
+					bool isLastLine = !(nodeStack.Peek().NextSibling is Comment);
+					if (!inDocumentationComment && !isLastLine) {
+						inDocumentationComment = true;
 						output.MarkFoldStart("///" + content, true);
+					}
 					output.Write("///");
 					output.Write(content);
-					inDocumentationComment = true;
-					bool isLastLine = !(nodeStack.Peek().NextSibling is Comment);
-					if (isLastLine) {
+					if (inDocumentationComment && isLastLine) {
 						inDocumentationComment = false;
 						output.MarkFoldEnd();
 					}
@@ -162,7 +163,7 @@ namespace ICSharpCode.Decompiler.Ast
 						foreach (var range in ranges) {
 							mapping.MemberCodeMappings.Add(new SourceCodeMapping {
 							                               	ILInstructionOffset = range,
-							                               	SourceCodeLine = output.CurrentLine,
+							                               	SourceCodeLine = output.Location.Line,
 							                               	MemberMapping = mapping
 							                               });
 						}
@@ -175,10 +176,10 @@ namespace ICSharpCode.Decompiler.Ast
 			
 			if (predicate(node)) {
 				var n = node as AttributedNode;
-				int c = 0;
+				int attributesCount = 0;
 				if (n != null)
-					c = n.Attributes.Count;
-				node.AddAnnotation(Tuple.Create(output.CurrentLine + c, output.CurrentColumn));
+					attributesCount = n.Attributes.Count;
+				node.AddAnnotation(new TextOutputLocation { Line = output.Location.Line + attributesCount, Column = output.Location.Column});
 			}
 			
 			nodeStack.Push(node);

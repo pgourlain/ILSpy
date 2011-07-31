@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
-using ICSharpCode.ILSpy.Debugger.Services;
+//using ICSharpCode.ILSpy.Debugger.Services;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using System.Windows;
@@ -32,36 +32,36 @@ namespace PgoPlugin.Debugger
 
         internal void ViewReady()
         {
-            ICSharpCode.ILSpy.Debugger.Services.DebuggerService.CurrentDebugger.IsProcessRunningChanged += new EventHandler(CurrentDebugger_IsProcessRunningChanged);
+            //ICSharpCode.ILSpy.Debugger.Services.DebuggerService.CurrentDebugger.IsProcessRunningChanged += new EventHandler(CurrentDebugger_IsProcessRunningChanged);
         }
 
         void CurrentDebugger_IsProcessRunningChanged(object sender, EventArgs e)
         {
-            WindowsDebugger wd = DebuggerService.CurrentDebugger as WindowsDebugger;
+            //WindowsDebugger wd = DebuggerService.CurrentDebugger as WindowsDebugger;
 
-            System.Diagnostics.Trace.WriteLine("Pgo : Begin CurrentDebugger_IsProcessRunningChanged");
+            //System.Diagnostics.Trace.WriteLine("Pgo : Begin CurrentDebugger_IsProcessRunningChanged");
 
-            if (wd != null && wd.DebuggedProcess.IsPaused)
-            {
-                var callstack = wd.DebuggedProcess.SelectedThread.Callstack;
-                var viewModels = callstack.Select(x => StackViewModel.FromStackFrame(x)).ToArray();
-                UiInvoke(() =>
-                {
-                    _CurrentCallStack.Clear();
-                    foreach (var item in viewModels)
-                    {
-                        _CurrentCallStack.Add(item);
-                    }
-                }); 
-            }
-            else
-            {
-                UiInvoke(() =>
-                    {
-                        _CurrentCallStack.Clear();
-                    });
-            }
-            System.Diagnostics.Trace.WriteLine("Pgo : End CurrentDebugger_IsProcessRunningChanged");
+            //if (wd != null && wd.DebuggedProcess.IsPaused)
+            //{
+            //    var callstack = wd.DebuggedProcess.SelectedThread.Callstack;
+            //    var viewModels = callstack.Select(x => StackViewModel.FromStackFrame(x)).ToArray();
+            //    UiInvoke(() =>
+            //    {
+            //        _CurrentCallStack.Clear();
+            //        foreach (var item in viewModels)
+            //        {
+            //            _CurrentCallStack.Add(item);
+            //        }
+            //    }); 
+            //}
+            //else
+            //{
+            //    UiInvoke(() =>
+            //        {
+            //            _CurrentCallStack.Clear();
+            //        });
+            //}
+            //System.Diagnostics.Trace.WriteLine("Pgo : End CurrentDebugger_IsProcessRunningChanged");
         }
 
 
