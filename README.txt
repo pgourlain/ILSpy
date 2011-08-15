@@ -23,4 +23,5 @@ Pierrick Gourlain add somes features in this fork :
 - displays a splash screen at startup
 - somes tweaks in assembly treeview
 - when code is obfuscated and unreadable by human, unreadable symbols are renamed to friendly names
+- plugin to sort assemblies in treeview
 

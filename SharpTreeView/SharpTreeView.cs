@@ -38,6 +38,7 @@ namespace ICSharpCode.TreeView
 			                                                                   new FrameworkPropertyMetadata(VirtualizationMode.Recycling));
 			
 			RegisterCommands();
+            RegisterEvents();
 		}
 
 		public static ResourceKey DefaultItemContainerStyleKey { get; private set; }
@@ -663,5 +664,39 @@ namespace ICSharpCode.TreeView
 		}
 
 		#endregion
-	}
+
+        #region Tooltip Events
+
+        private static void RegisterEvents()
+        {
+            TooltipItemOpeningEvent= EventManager.RegisterRoutedEvent("TooltipItemOpening", RoutingStrategy.Bubble, typeof(EventHandler<TooltipItemOpeningRoutedEventArgs>), typeof(SharpTreeView));
+        }
+
+        public static RoutedEvent TooltipItemOpeningEvent;
+
+        public event EventHandler<TooltipItemOpeningRoutedEventArgs> TooltipItemOpening
+        {
+            add { AddHandler(TooltipItemOpeningEvent, value); }
+            remove { RemoveHandler(TooltipItemOpeningEvent, value); }
+        }
+
+        #endregion
+
+        internal object GetTooltip(SharpTreeNode sharpTreeNode)
+        {
+            TooltipItemOpeningRoutedEventArgs e = new TooltipItemOpeningRoutedEventArgs();
+            e.ToolTip = sharpTreeNode.Text;
+            e.RoutedEvent = TooltipItemOpeningEvent;
+            e.Node = sharpTreeNode;
+            e.Source = this;
+            this.RaiseEvent(e);
+            return e.ToolTip ?? sharpTreeNode.Text;
+        }
+    }
+
+    public class TooltipItemOpeningRoutedEventArgs : RoutedEventArgs
+    {
+        public object ToolTip { get; set; }
+        public SharpTreeNode Node { get; internal set; }
+    }
 }

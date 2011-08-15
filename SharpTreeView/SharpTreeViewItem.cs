@@ -23,6 +23,16 @@ namespace ICSharpCode.TreeView
 
         public SharpTreeViewItem()
         {
+            this.ToolTip = new object();
+            this.ToolTipOpening += new ToolTipEventHandler(SharpTreeViewItem_ToolTipOpening);
+        }
+
+        void SharpTreeViewItem_ToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            if (this.ParentTreeView != null)
+            {
+                this.ToolTip = this.ParentTreeView.GetTooltip(this.Node);
+            }
         }
 
 		public SharpTreeNode Node

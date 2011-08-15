@@ -177,6 +177,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\SimpleCommand.cs" />
+    <Compile Include="TooltipEntry.cs" />
     <Compile Include="TreeNodes\Analyzer\AnalyzeContextMenuEntry.cs" />
     <Compile Include="TreeNodes\Analyzer\AnalyzedEventOverridesTreeNode.cs" />
     <Compile Include="TreeNodes\Analyzer\AnalyzedEventTreeNode.cs" />
@@ -381,9 +382,7 @@
       <Name>ICSharpCode.TreeView</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="VB" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Images\loading_14.gif" />
     <Resource Include="Images\loading_12.gif" />
@@ -397,10 +396,6 @@
     <Resource Include="Images\loading_13.gif" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="AvalonEdit" />
-    <Folder Include="Bookmarks" />
-    <Folder Include="Options" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

@@ -98,7 +98,8 @@ namespace ICSharpCode.ILSpy
 			InitMainMenu();
 			InitToolbar();
 			ContextMenuProvider.Add(treeView);
-			
+            TooltipEntryProvider.Add(treeView);
+
 			this.Loaded += new RoutedEventHandler(MainWindow_Loaded);
 		}
 		
