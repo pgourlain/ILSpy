@@ -41,8 +41,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			this.type = type;
 			this.parentAssemblyNode = parentAssemblyNode;
 			this.LazyLoading = true;
-            this.Name = AstHumanReadable.MakeReadable(type, type.Name, AstHumanReadable.Type);
-            this.Namespace = AstHumanReadable.MakeReadable(type, type.Namespace, AstHumanReadable.Namespace);
 		}
 		
 		public TypeDefinition TypeDefinition {
@@ -52,18 +50,20 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		public AssemblyTreeNode ParentAssemblyNode {
 			get { return parentAssemblyNode; }
 		}
-
-        public string Namespace
-        {
-            get;
-            private set;
-        }
+		
+		public string Name {
+			get { return type.Name; }
+		}
+		
+		public string Namespace {
+			get { return type.Namespace; }
+		}
 		
 		public override object Text {
 			get { return HighlightSearchMatch(this.Language.FormatTypeName(type)); }
 		}
 		
-		public bool IsPublicAPI {
+		public override bool IsPublicAPI {
 			get {
 				switch (type.Attributes & TypeAttributes.VisibilityMask) {
 					case TypeAttributes.Public:
@@ -97,37 +97,25 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				this.Children.Add(new BaseTypesTreeNode(type));
 			if (!type.IsSealed)
 				this.Children.Add(new DerivedTypesTreeNode(parentAssemblyNode.AssemblyList, type));
-
-            this.Children.AddRange(type.NestedTypes.Select(nestedType => new TypeTreeNode(nestedType, parentAssemblyNode)).OrderBy(x => x.Name));
-            //foreach (TypeDefinition nestedType in type.NestedTypes.OrderBy(m => m.Name)) {
-            //    this.Children.Add(new TypeTreeNode(nestedType, parentAssemblyNode));
-            //}
-            this.Children.AddRange(type.Fields.Select(field => new FieldTreeNode(field)).OrderBy(x => x.Name));
-            
-            //foreach (FieldDefinition field in type.Fields.OrderBy(m => m.Name))
-            //{
-            //    this.Children.Add(new FieldTreeNode(field));
-            //}
-
-            this.Children.AddRange(type.Properties.Select(property => new PropertyTreeNode(property)).OrderBy(x => x.Name));
-            //foreach (PropertyDefinition property in type.Properties.OrderBy(m => m.Name))
-            //{
-            //    this.Children.Add(new PropertyTreeNode(property));
-            //}
-
-            this.Children.AddRange(type.Events.Select(ev => new EventTreeNode(ev)).OrderBy(x => x.Name));
-            //foreach (EventDefinition ev in type.Events.OrderBy(m => m.Name))
-            //{
-            //    this.Children.Add(new EventTreeNode(ev));
-            //}
+			foreach (TypeDefinition nestedType in type.NestedTypes.OrderBy(m => m.Name)) {
+				this.Children.Add(new TypeTreeNode(nestedType, parentAssemblyNode));
+			}
+			foreach (FieldDefinition field in type.Fields.OrderBy(m => m.Name)) {
+				this.Children.Add(new FieldTreeNode(field));
+			}
+			
+			foreach (PropertyDefinition property in type.Properties.OrderBy(m => m.Name)) {
+				this.Children.Add(new PropertyTreeNode(property));
+			}
+			foreach (EventDefinition ev in type.Events.OrderBy(m => m.Name)) {
+				this.Children.Add(new EventTreeNode(ev));
+			}
 			HashSet<MethodDefinition> accessorMethods = type.GetAccessorMethods();
-            this.Children.AddRange(type.Methods.Where(method => !accessorMethods.Contains(method))
-                .Select(m => new MethodTreeNode(m)).OrderBy(m => m.Name));
-            //foreach (MethodDefinition method in type.Methods.OrderBy(m => m.Name)) {
-            //    if (!accessorMethods.Contains(method)) {
-            //        this.Children.Add(new MethodTreeNode(method));
-            //    }
-            //}
+			foreach (MethodDefinition method in type.Methods.OrderBy(m => m.Name)) {
+				if (!accessorMethods.Contains(method)) {
+					this.Children.Add(new MethodTreeNode(method));
+				}
+			}
 		}
 		
 		public override bool CanExpandRecursively {
@@ -213,18 +201,5 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		MemberReference IMemberTreeNode.Member {
 			get { return type; }
 		}
-
-        public override bool IsPublicAccess()
-        {
-            if (type != null)
-            {
-                if (type.IsNested)
-                {
-                    return type.IsNestedPublic || type.IsNestedFamily; 
-                }
-                return !type.IsNotPublic;
-            }
-            return true;
-        }
 	}
 }

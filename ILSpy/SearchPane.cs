@@ -38,7 +38,6 @@ using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy
 {
@@ -62,15 +61,17 @@ namespace ICSharpCode.ILSpy
 		
 		const int SearchMode_Type = 0;
 		const int SearchMode_Member = 1;
-		const int SearchMode_Literal = 2;
+        const int SearchMode_Literal = 2;
+        const int SearchMode_TypeOrMember = 3;
 		
 		private SearchPane()
 		{
 			InitializeComponent();
-			searchModeComboBox.Items.Add(new { Image = Images.Class, Name = "Type" });
+            searchModeComboBox.Items.Add(new { Image = Images.Class, Name = "Type" });
 			searchModeComboBox.Items.Add(new { Image = Images.Property, Name = "Member" });
 			searchModeComboBox.Items.Add(new { Image = Images.Literal, Name = "Constant" });
-			searchModeComboBox.SelectedIndex = SearchMode_Type;
+            searchModeComboBox.Items.Add(new { Image = Images.Struct, Name = "T & M" });
+            searchModeComboBox.SelectedIndex = SearchMode_TypeOrMember;
 			
 			MainWindow.Instance.CurrentAssemblyListChanged += MainWindow_Instance_CurrentAssemblyListChanged;
 		}
@@ -288,7 +289,8 @@ namespace ICSharpCode.ILSpy
 			
 			void PerformSearch(TypeDefinition type)
 			{
-				if (searchMode == SearchMode_Type && IsMatch(AstHumanReadable.MakeReadable(type, type.Name, AstHumanReadable.Type))) {
+                if ((searchMode == SearchMode_Type || searchMode == SearchMode_TypeOrMember) && IsMatch(type.Name))
+                {
 					AddResult(new SearchResult {
 					          	Member = type,
 					          	Image = TypeTreeNode.GetIcon(type),
@@ -363,32 +365,48 @@ namespace ICSharpCode.ILSpy
 			{
 				if (searchMode == SearchMode_Literal)
 					return IsLiteralMatch(field.Constant);
-				else
-					return IsMatch(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field));
+                else if (searchMode == SearchMode_TypeOrMember)
+                {
+                    return IsMatch(field.DeclaringType.FullName + "." + field.Name );
+                }
+                else
+                    return IsMatch(field.Name);
 			}
 			
 			bool IsMatch(PropertyDefinition property)
 			{
 				if (searchMode == SearchMode_Literal)
 					return MethodIsLiteralMatch(property.GetMethod) || MethodIsLiteralMatch(property.SetMethod);
-				else
-					return IsMatch(AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property));
+                else if (searchMode == SearchMode_TypeOrMember)
+                {
+                    return IsMatch(property.DeclaringType.FullName + "." + property.Name);
+                }
+                else
+					return IsMatch(property.Name);
 			}
 			
 			bool IsMatch(EventDefinition ev)
 			{
 				if (searchMode == SearchMode_Literal)
 					return MethodIsLiteralMatch(ev.AddMethod) || MethodIsLiteralMatch(ev.RemoveMethod) || MethodIsLiteralMatch(ev.InvokeMethod);
-				else
-					return IsMatch(AstHumanReadable.MakeReadable(ev, ev.Name, AstHumanReadable.Event));
+                else if (searchMode == SearchMode_TypeOrMember)
+                {
+                    return IsMatch(ev.DeclaringType.FullName + "." + ev.Name);
+                }
+                else
+					return IsMatch(ev.Name);
 			}
 			
 			bool IsMatch(MethodDefinition m)
 			{
 				if (searchMode == SearchMode_Literal)
 					return MethodIsLiteralMatch(m);
-				else
-					return IsMatch(AstHumanReadable.MakeReadable(m, m.Name, AstHumanReadable.Method));
+                else if (searchMode == SearchMode_TypeOrMember)
+                {
+                    return IsMatch(m.DeclaringType.FullName + "." + m.Name);
+                }
+                else
+					return IsMatch(m.Name);
 			}
 			
 			bool IsLiteralMatch(object val)

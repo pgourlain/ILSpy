@@ -20,7 +20,6 @@ using System;
 using System.Windows.Media;
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
-using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -47,7 +46,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				foreach (var m in ev.OtherMethods)
 					this.Children.Add(new MethodTreeNode(m));
 			}
-            this.Name = AstHumanReadable.MakeReadable(ev, ev.Name, AstHumanReadable.Event);
 		}
 		
 		public EventDefinition EventDefinition
@@ -62,7 +60,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public static object GetText(EventDefinition eventDef, Language language)
 		{
-            return HighlightSearchMatch(AstHumanReadable.MakeReadable(eventDef, eventDef.Name, AstHumanReadable.Event), " : " + language.TypeToString(eventDef.EventType, false, eventDef));
+			return HighlightSearchMatch(eventDef.Name, " : " + language.TypeToString(eventDef.EventType, false, eventDef));
 		}
 		
 		public override object Icon
@@ -99,7 +97,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override FilterResult Filter(FilterSettings settings)
 		{
-			if (settings.SearchTermMatches(this.Name) && settings.Language.ShowMember(ev))
+			if (settings.SearchTermMatches(ev.Name) && settings.Language.ShowMember(ev))
 				return FilterResult.Match;
 			else
 				return FilterResult.Hidden;
@@ -110,19 +108,17 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			language.DecompileEvent(ev, output, options);
 		}
 		
+		
+		public override bool IsPublicAPI {
+			get {
+				MethodDefinition accessor = ev.AddMethod ?? ev.RemoveMethod;
+				return accessor != null && (accessor.IsPublic || accessor.IsFamilyOrAssembly || accessor.IsFamily);
+			}
+		}
+		
 		MemberReference IMemberTreeNode.Member
 		{
 			get { return ev; }
 		}
-
-        public override bool IsPublicAccess()
-        {
-            if (ev != null && ev.AddMethod != null)
-            {
-                return ev.AddMethod.IsPublic || ev.AddMethod.IsVirtual || ev.AddMethod.IsFamily;
-            }
-            return true;
-        }
-
 	}
 }

@@ -49,7 +49,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				foreach (var m in property.OtherMethods)
 					this.Children.Add(new MethodTreeNode(m));
 			}
-            this.Name = AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property);
 		}
 
 		public PropertyDefinition PropertyDefinition {
@@ -139,7 +138,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override FilterResult Filter(FilterSettings settings)
 		{
-			if (settings.SearchTermMatches(this.Name) && settings.Language.ShowMember(property))
+			if (settings.SearchTermMatches(property.Name) && settings.Language.ShowMember(property))
 				return FilterResult.Match;
 			else
 				return FilterResult.Hidden;
@@ -149,20 +148,23 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		{
 			language.DecompileProperty(property, output, options);
 		}
+		
+		public override bool IsPublicAPI {
+			get {
+				switch (GetAttributesOfMostAccessibleMethod(property) & MethodAttributes.MemberAccessMask) {
+					case MethodAttributes.Public:
+					case MethodAttributes.Family:
+					case MethodAttributes.FamORAssem:
+						return true;
+					default:
+						return false;
+				}
+			}
+		}
 
 		MemberReference IMemberTreeNode.Member
 		{
 			get { return property; }
 		}
-
-        public override bool IsPublicAccess()
-        {
-            if (this.property != null && this.property.GetMethod != null)
-            {
-                var m = this.property.GetMethod;
-                return m.IsPublic || m.IsVirtual || m.IsFamily;
-            }
-            return true;
-        }
 	}
 }

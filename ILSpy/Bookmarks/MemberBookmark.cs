@@ -92,9 +92,9 @@ namespace ICSharpCode.ILSpy.Bookmarks
 		
 		public int LineNumber {
 			get {
-				var t = node.Annotation<TextOutputLocation>();
-				if (t != null)
-					return t.Line;
+				//var t = node.Annotation<TextOutputLocation>();
+				//if (t != null)
+				//	return t.Line;
 				return 0;
 			}
 		}
@@ -138,8 +138,6 @@ namespace ICSharpCode.ILSpy.Bookmarks
 					var n = Node as TypeDeclaration;
 					switch (n.ClassType)
 					{
-						case ClassType.Delegate:
-							return GetTypeOverlayedImage(attrNode, TypeIcon.Delegate);
 						case ClassType.Enum:
 							return GetTypeOverlayedImage(attrNode, TypeIcon.Enum);
 						case ClassType.Struct:

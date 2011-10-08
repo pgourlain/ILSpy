@@ -17,7 +17,7 @@ namespace ICSharpCode.NRefactory.VB
 	/// <summary>
 	/// Description of OutputVisitor.
 	/// </summary>
-	public class OutputVisitor : IAstVisitor<object, object>, IPatternAstVisitor<object, object>
+	public class OutputVisitor : IAstVisitor<object, object>
 	{
 		readonly IOutputFormatter formatter;
 		readonly VBFormattingOptions policy;
@@ -270,20 +270,16 @@ namespace ICSharpCode.NRefactory.VB
 		void WriteClassTypeKeyword(TypeDeclaration typeDeclaration)
 		{
 			switch (typeDeclaration.ClassType) {
-				case ICSharpCode.NRefactory.TypeSystem.ClassType.Class:
+				case ClassType.Class:
 					WriteKeyword("Class");
 					break;
-				case ICSharpCode.NRefactory.TypeSystem.ClassType.Enum:
-					break;
-				case ICSharpCode.NRefactory.TypeSystem.ClassType.Interface:
+				case ClassType.Interface:
 					WriteKeyword("Interface");
 					break;
-				case ICSharpCode.NRefactory.TypeSystem.ClassType.Struct:
+				case ClassType.Struct:
 					WriteKeyword("Structure");
 					break;
-				case ICSharpCode.NRefactory.TypeSystem.ClassType.Delegate:
-					break;
-				case ICSharpCode.NRefactory.TypeSystem.ClassType.Module:
+				case ClassType.Module:
 					WriteKeyword("Module");
 					break;
 				default:
@@ -686,43 +682,6 @@ namespace ICSharpCode.NRefactory.VB
 		}
 		#endregion
 		
-		#region Pattern Matching
-		public object VisitAnyNode(AnyNode anyNode, object data)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public object VisitBackreference(Backreference backreference, object data)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public object VisitChoice(Choice choice, object data)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public object VisitNamedNode(NamedNode namedNode, object data)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public object VisitRepeat(Repeat repeat, object data)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public object VisitOptionalNode(OptionalNode optionalNode, object data)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public object VisitIdentifierExpressionBackreference(IdentifierExpressionBackreference identifierExpressionBackreference, object data)
-		{
-			throw new NotImplementedException();
-		}
-		#endregion
-		
 		#region StartNode/EndNode
 		void StartNode(AstNode node)
 		{
@@ -1053,7 +1012,7 @@ namespace ICSharpCode.NRefactory.VB
 		#endregion
 		
 		#region IsKeyword Test
-		static readonly HashSet<string> unconditionalKeywords = new HashSet<string> {
+		static readonly HashSet<string> unconditionalKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
 			"AddHandler", "AddressOf", "Alias", "And", "AndAlso", "As", "Boolean", "ByRef", "Byte",
 			"ByVal", "Call", "Case", "Catch", "CBool", "CByte", "CChar", "CInt", "Class", "CLng",
 			"CObj", "Const", "Continue", "CSByte", "CShort", "CSng", "CStr", "CType", "CUInt",
@@ -1705,6 +1664,11 @@ namespace ICSharpCode.NRefactory.VB
 			WriteCommaSeparatedListInParenthesis(objectCreationExpression.Arguments, false);
 			if (!objectCreationExpression.Initializer.IsNull) {
 				Space();
+				if (objectCreationExpression.Initializer.Elements.Any(x => x is FieldInitializerExpression))
+					WriteKeyword("With");
+				else
+					WriteKeyword("From");
+				Space();
 				objectCreationExpression.Initializer.AcceptVisitor(this, data);
 			}
 			
@@ -1870,7 +1834,7 @@ namespace ICSharpCode.NRefactory.VB
 		{
 			StartNode(fieldInitializerExpression);
 			
-			if (fieldInitializerExpression.IsKey) {
+			if (fieldInitializerExpression.IsKey && fieldInitializerExpression.Parent is AnonymousObjectCreationExpression) {
 				WriteKeyword("Key");
 				Space();
 			}

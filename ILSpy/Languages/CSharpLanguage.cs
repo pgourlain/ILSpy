@@ -100,7 +100,6 @@ namespace ICSharpCode.ILSpy
 				codeDomBuilder.AddMethod(method);
 				RunTransformsAndGenerateCode(codeDomBuilder, output, options);
 			}
-			NotifyDecompilationFinished(codeDomBuilder);
 		}
 		
 		class SelectCtorTransform : IAstTransform
@@ -145,7 +144,6 @@ namespace ICSharpCode.ILSpy
 			AstBuilder codeDomBuilder = CreateAstBuilder(options, currentType: property.DeclaringType, isSingleMember: true);
 			codeDomBuilder.AddProperty(property);
 			RunTransformsAndGenerateCode(codeDomBuilder, output, options);
-			NotifyDecompilationFinished(codeDomBuilder);
 		}
 
 		public override void DecompileField(FieldDefinition field, ITextOutput output, DecompilationOptions options)
@@ -159,7 +157,6 @@ namespace ICSharpCode.ILSpy
 				AddFieldsAndCtors(codeDomBuilder, field.DeclaringType, field.IsStatic);
 			}
 			RunTransformsAndGenerateCode(codeDomBuilder, output, options, new SelectFieldTransform(field));
-			NotifyDecompilationFinished(codeDomBuilder);
 		}
 		
 		/// <summary>
@@ -203,7 +200,6 @@ namespace ICSharpCode.ILSpy
 			AstBuilder codeDomBuilder = CreateAstBuilder(options, currentType: ev.DeclaringType, isSingleMember: true);
 			codeDomBuilder.AddEvent(ev);
 			RunTransformsAndGenerateCode(codeDomBuilder, output, options);
-			NotifyDecompilationFinished(codeDomBuilder);
 		}
 
 		public override void DecompileType(TypeDefinition type, ITextOutput output, DecompilationOptions options)
@@ -211,7 +207,6 @@ namespace ICSharpCode.ILSpy
 			AstBuilder codeDomBuilder = CreateAstBuilder(options, currentType: type);
 			codeDomBuilder.AddType(type);
 			RunTransformsAndGenerateCode(codeDomBuilder, output, options);
-			NotifyDecompilationFinished(codeDomBuilder);
 		}
 		
 		void RunTransformsAndGenerateCode(AstBuilder astBuilder, ITextOutput output, DecompilationOptions options, IAstTransform additionalTransform = null)
@@ -283,7 +278,6 @@ namespace ICSharpCode.ILSpy
 					codeDomBuilder.GenerateCode(output);
 				}
 			}
-			OnDecompilationFinished(null);
 		}
 
 		#region WriteProjectFile
@@ -387,7 +381,6 @@ namespace ICSharpCode.ILSpy
 					if (r.Name != "mscorlib") {
 						w.WriteStartElement("Reference");
 						w.WriteAttributeString("Include", r.Name);
-						// TODO: RequiredTargetFramework
 						w.WriteEndElement();
 					}
 				}
@@ -575,7 +568,7 @@ namespace ICSharpCode.ILSpy
 					((ComposedType)astType).PointerRank--;
 			}
 
-			astType.AcceptVisitor(new OutputVisitor(w, new CSharpFormattingOptions()), null);
+			astType.AcceptVisitor(new CSharpOutputVisitor(w, new CSharpFormattingOptions()), null);
 			return w.ToString();
 		}
 
@@ -607,7 +600,7 @@ namespace ICSharpCode.ILSpy
 				buffer.Append(@"]");
 				return buffer.ToString();
 			} else
-				return AstHumanReadable.MakeReadable(property, property.Name, AstHumanReadable.Property);
+				return property.Name;
 		}
 		
 		public override string FormatTypeName(TypeDefinition type)

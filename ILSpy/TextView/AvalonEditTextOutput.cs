@@ -36,6 +36,8 @@ namespace ICSharpCode.ILSpy.TextView
 	sealed class ReferenceSegment : TextSegment
 	{
 		public object Reference;
+		public bool IsLocal;
+		public bool IsLocalTarget;
 	}
 	
 	/// <summary>
@@ -65,8 +67,8 @@ namespace ICSharpCode.ILSpy.TextView
 	/// </summary>
 	public sealed class AvalonEditTextOutput : ISmartTextOutput
 	{
-		TextOutputLocation location = new TextOutputLocation { Line = 1, Column = 1 };
 		int lastLineStart = 0;
+		int lineNumber = 1;
 		readonly StringBuilder b = new StringBuilder();
 		
 		/// <summary>Current indentation level</summary>
@@ -89,6 +91,8 @@ namespace ICSharpCode.ILSpy.TextView
 		
 		/// <summary>Embedded UIElements, see <see cref="UIElementGenerator"/>.</summary>
 		internal readonly List<KeyValuePair<int, Lazy<UIElement>>> UIElements = new List<KeyValuePair<int, Lazy<UIElement>>>();
+		
+		List<MemberMapping> memberMappings = new List<MemberMapping>();
 		
 		public AvalonEditTextOutput()
 		{
@@ -117,11 +121,14 @@ namespace ICSharpCode.ILSpy.TextView
 			get { return b.Length; }
 		}
 		
-		public TextOutputLocation Location {
-			get {
-				location.Column = b.Length - lastLineStart + 1;
-				return location;
+		public ICSharpCode.NRefactory.TextLocation Location {
+			get { 
+				return new ICSharpCode.NRefactory.TextLocation(lineNumber, b.Length - lastLineStart + 1 + (needsIndent ? indent : 0));
 			}
+		}
+		
+		public IList<MemberMapping> MemberMappings {
+			get { return memberMappings; }
 		}
 		
 		#region Text Document
@@ -195,7 +202,7 @@ namespace ICSharpCode.ILSpy.TextView
 			b.AppendLine();
 			needsIndent = true;
 			lastLineStart = b.Length;
-			location.Line++;
+			lineNumber++;
 			if (this.TextLength > LengthLimit) {
 				throw new OutputLengthExceededException();
 			}
@@ -204,17 +211,20 @@ namespace ICSharpCode.ILSpy.TextView
 		public void WriteDefinition(string text, object definition)
 		{
 			WriteIndent();
+			int start = this.TextLength;
 			b.Append(text);
+			int end = this.TextLength;
 			this.DefinitionLookup.AddDefinition(definition, this.TextLength);
+			references.Add(new ReferenceSegment { StartOffset = start, EndOffset = end, Reference = definition, IsLocal = true, IsLocalTarget = true });
 		}
 		
-		public void WriteReference(string text, object reference)
+		public void WriteReference(string text, object reference, bool isLocal)
 		{
 			WriteIndent();
 			int start = this.TextLength;
 			b.Append(text);
 			int end = this.TextLength;
-			references.Add(new ReferenceSegment { StartOffset = start, EndOffset = end, Reference = reference });
+			references.Add(new ReferenceSegment { StartOffset = start, EndOffset = end, Reference = reference, IsLocal = isLocal });
 		}
 		
 		public void MarkFoldStart(string collapsedText, bool defaultCollapsed)
@@ -242,6 +252,11 @@ namespace ICSharpCode.ILSpy.TextView
 					throw new InvalidOperationException("Only one UIElement is allowed for each position in the document");
 				this.UIElements.Add(new KeyValuePair<int, Lazy<UIElement>>(this.TextLength, new Lazy<UIElement>(element)));
 			}
+		}
+		
+		public void AddDebuggerMemberMapping(MemberMapping memberMapping)
+		{
+			memberMappings.Add(memberMapping);
 		}
 	}
 }

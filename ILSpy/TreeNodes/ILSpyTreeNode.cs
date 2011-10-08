@@ -166,26 +166,18 @@ namespace ICSharpCode.ILSpy.TreeNodes
 					ApplyFilterToChild(node);
 			}
 		}
-
-        public virtual bool IsPublicAccess()
-        {
-            return true;
-        }
-
-        public override System.Windows.Media.Brush ForegroundBrush
-        {
-            get
-            {
-                if (!IsPublicAccess())
-                    return System.Windows.SystemColors.GrayTextBrush;
-                return base.ForegroundBrush;
-            }
-        }
-
-        public virtual string Name
-        {
-            get;
-            protected set;
-        }
+		
+		public virtual bool IsPublicAPI {
+			get { return true; }
+		}
+		
+		public override System.Windows.Media.Brush Foreground {
+			get {
+				if (IsPublicAPI)
+					return base.Foreground;
+				else
+					return System.Windows.SystemColors.GrayTextBrush;
+			}
+		}
 	}
 }

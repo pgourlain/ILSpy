@@ -19,9 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.ILAst;
+using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
 
@@ -33,6 +33,8 @@ namespace ICSharpCode.Decompiler.Ast
 		readonly Stack<AstNode> nodeStack = new Stack<AstNode>();
 		int braceLevelWithinType = -1;
 		bool inDocumentationComment = false;
+		bool firstUsingDeclaration;
+		bool lastUsingDeclaration;
 		
 		public TextOutputFormatter(ITextOutput output)
 		{
@@ -43,12 +45,31 @@ namespace ICSharpCode.Decompiler.Ast
 		
 		public void WriteIdentifier(string identifier)
 		{
-			MemberReference memberRef = GetCurrentMemberReference();
-			
-			if (memberRef != null)
+			object memberRef = GetCurrentMemberReference();
+
+			if (memberRef != null) {
 				output.WriteReference(identifier, memberRef);
-			else
-				output.Write(identifier);
+				return;
+			}
+
+			var definition = GetCurrentLocalDefinition();
+			if (definition != null) {
+				output.WriteDefinition(identifier, definition);
+				return;
+			}
+
+			memberRef = GetCurrentLocalReference();
+			if (memberRef != null) {
+				output.WriteReference(identifier, memberRef, true);
+				return;
+			}
+
+			if (firstUsingDeclaration) {
+				output.MarkFoldStart(defaultCollapsed: true);
+				firstUsingDeclaration = false;
+			}
+
+			output.Write(identifier);
 		}
 
 		MemberReference GetCurrentMemberReference()
@@ -59,6 +80,60 @@ namespace ICSharpCode.Decompiler.Ast
 				memberRef = node.Parent.Annotation<MemberReference>();
 			}
 			return memberRef;
+		}
+
+		object GetCurrentLocalReference()
+		{
+			AstNode node = nodeStack.Peek();
+			ILVariable variable = node.Annotation<ILVariable>();
+			if (variable != null) {
+				if (variable.OriginalParameter != null)
+					return variable.OriginalParameter;
+				//if (variable.OriginalVariable != null)
+				//    return variable.OriginalVariable;
+				return variable;
+			}
+
+			var gotoStatement = node as GotoStatement;
+			if (gotoStatement != null)
+			{
+				var method = nodeStack.Select(nd => nd.Annotation<MethodReference>()).FirstOrDefault(mr => mr != null);
+				if (method != null)
+					return method.ToString() + gotoStatement.Label;
+			}
+
+			return null;
+		}
+
+		object GetCurrentLocalDefinition()
+		{
+			AstNode node = nodeStack.Peek();
+			var parameterDef = node.Annotation<ParameterDefinition>();
+			if (parameterDef != null)
+				return parameterDef;
+
+			if (node is VariableInitializer || node is CatchClause || node is ForeachStatement) {
+				var variable = node.Annotation<ILVariable>();
+				if (variable != null) {
+					if (variable.OriginalParameter != null)
+						return variable.OriginalParameter;
+					//if (variable.OriginalVariable != null)
+					//    return variable.OriginalVariable;
+					return variable;
+				} else {
+
+				}
+			}
+
+			var label = node as LabelStatement;
+			if (label != null)
+			{
+				var method = nodeStack.Select(nd => nd.Annotation<MethodReference>()).FirstOrDefault(mr => mr != null);
+				if (method != null)
+					return method.ToString() + label.Label;
+			}
+
+			return null;
 		}
 		
 		public void WriteKeyword(string keyword)
@@ -115,6 +190,10 @@ namespace ICSharpCode.Decompiler.Ast
 		
 		public void NewLine()
 		{
+			if (lastUsingDeclaration) {
+				output.MarkFoldEnd();
+				lastUsingDeclaration = false;
+			}
 			output.WriteLine();
 		}
 		
@@ -147,48 +226,65 @@ namespace ICSharpCode.Decompiler.Ast
 			}
 		}
 		
+		Stack<TextLocation> startLocations = new Stack<TextLocation>();
+		MemberMapping currentMemberMapping;
+		Stack<MemberMapping> parentMemberMappings = new Stack<MemberMapping>();
+		
 		public void StartNode(AstNode node)
 		{
-			// code mappings
-			var ranges = node.Annotation<List<ILRange>>();
-			if (ranges != null && ranges.Count > 0) {
-				// find the ancestor that has method mapping as annotation
-				if (node.Parent != null)
-				{
-					var n = node.Ancestors.FirstOrDefault(a => a.Annotation<MemberMapping>() != null);
-					if (n != null) {
-						MemberMapping mapping = n.Annotation<MemberMapping>();
-
-						// add all ranges
-						foreach (var range in ranges) {
-							mapping.MemberCodeMappings.Add(new SourceCodeMapping {
-							                               	ILInstructionOffset = range,
-							                               	SourceCodeLine = output.Location.Line,
-							                               	MemberMapping = mapping
-							                               });
-						}
-					}
+			if (nodeStack.Count == 0) {
+				if (IsUsingDeclaration(node)) {
+					firstUsingDeclaration = !IsUsingDeclaration(node.PrevSibling);
+					lastUsingDeclaration = !IsUsingDeclaration(node.NextSibling);
+				} else {
+					firstUsingDeclaration = false;
+					lastUsingDeclaration = false;
 				}
 			}
-			
-			// definitions of types and their members
-			Predicate<AstNode> predicate = n => n is AttributedNode;
-			
-			if (predicate(node)) {
-				var n = node as AttributedNode;
-				int attributesCount = 0;
-				if (n != null)
-					attributesCount = n.Attributes.Count;
-				node.AddAnnotation(new TextOutputLocation { Line = output.Location.Line + attributesCount, Column = output.Location.Column});
-			}
-			
 			nodeStack.Push(node);
+			startLocations.Push(output.Location);
+			
+			MemberMapping mapping = node.Annotation<MemberMapping>();
+			if (mapping != null) {
+				parentMemberMappings.Push(currentMemberMapping);
+				currentMemberMapping = mapping;
+			}
 		}
 		
+		private bool IsUsingDeclaration(AstNode node)
+		{
+			return node is UsingDeclaration || node is UsingAliasDeclaration;
+		}
+
 		public void EndNode(AstNode node)
 		{
 			if (nodeStack.Pop() != node)
 				throw new InvalidOperationException();
+			
+			var startLocation = startLocations.Pop();
+			
+			// code mappings
+			if (currentMemberMapping != null) {
+				var ranges = node.Annotation<List<ILRange>>();
+				if (ranges != null && ranges.Count > 0) {
+					// add all ranges
+					foreach (var range in ranges) {
+						currentMemberMapping.MemberCodeMappings.Add(
+							new SourceCodeMapping {
+								ILInstructionOffset = range,
+								StartLocation = startLocation,
+								EndLocation = output.Location,
+								MemberMapping = currentMemberMapping
+							});
+					}
+				}
+			}
+			
+			
+			if (node.Annotation<MemberMapping>() != null) {
+				output.AddDebuggerMemberMapping(currentMemberMapping);
+				currentMemberMapping = parentMemberMappings.Pop();
+			}
 		}
 	}
 }

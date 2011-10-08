@@ -1,4 +1,4 @@
-﻿ILSpy is the open-source .NET assembly browser and decompiler.
+ILSpy is the open-source .NET assembly browser and decompiler.
 Website: http://www.ilspy.net/
 
 Copyright 2011 AlphaSierraPapa for the SharpDevelop team
@@ -17,11 +17,13 @@ ILSpy Contributors:
 	Siegfried Pammer
 	Artur Zgodzinski
 	Eusebiu Marcu
-
+	Pent Ploompuu
 Pierrick Gourlain add somes features in this fork :
 - displays non public classes as gray
 - displays a splash screen at startup
 - somes tweaks in assembly treeview
-- when code is obfuscated and unreadable by human, unreadable symbols are renamed to friendly names
+	- tooltip extension
+- add search on type and member
 - plugin to sort assemblies in treeview
+- plugin to show tooltip on assembly (version and location)
 

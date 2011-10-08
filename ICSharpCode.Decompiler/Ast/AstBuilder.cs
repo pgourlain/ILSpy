@@ -38,7 +38,6 @@ using Mono.Cecil.Cil;
 namespace ICSharpCode.Decompiler.Ast
 {
 	using Ast = ICSharpCode.NRefactory.CSharp;
-	using ClassType = ICSharpCode.NRefactory.TypeSystem.ClassType;
 	using VarianceModifier = ICSharpCode.NRefactory.TypeSystem.VarianceModifier;
 	
 	[Flags]
@@ -50,7 +49,7 @@ namespace ICSharpCode.Decompiler.Ast
 		DoNotUsePrimitiveTypeNames = 4
 	}
 	
-	public class AstBuilder : BaseCodeMappings
+	public class AstBuilder
 	{
 		DecompilerContext context;
 		CompilationUnit astCompileUnit = new CompilationUnit();
@@ -63,10 +62,6 @@ namespace ICSharpCode.Decompiler.Ast
 				throw new ArgumentNullException("context");
 			this.context = context;
 			this.DecompileMethodBodies = true;
-			
-			this.LocalVariables = new ConcurrentDictionary<int, IEnumerable<ILVariable>>();
-			this.CodeMappings = new Dictionary<int, List<MemberMapping>>();
-			this.DecompiledMemberReferences = new Dictionary<int, MemberReference>();
 		}
 		
 		public static bool MemberIsHidden(MemberReference member, DecompilerSettings settings)
@@ -141,7 +136,7 @@ namespace ICSharpCode.Decompiler.Ast
 			formattingPolicy.SpaceBeforeMethodDeclarationParentheses = false;
 			formattingPolicy.SpaceBeforeConstructorDeclarationParentheses = false;
 			formattingPolicy.SpaceBeforeDelegateDeclarationParentheses = false;
-			astCompileUnit.AcceptVisitor(new OutputVisitor(outputFormatter, formattingPolicy), null);
+			astCompileUnit.AcceptVisitor(new CSharpOutputVisitor(outputFormatter, formattingPolicy), null);
 		}
 		
 		public void AddAssembly(AssemblyDefinition assemblyDefinition, bool onlyAssemblyLevel = false)
@@ -225,7 +220,7 @@ namespace ICSharpCode.Decompiler.Ast
 		public void AddType(TypeDefinition typeDef)
 		{
 			var astType = CreateType(typeDef);
-            NamespaceDeclaration astNS = GetCodeNamespace(AstHumanReadable.MakeReadable(typeDef, typeDef.Namespace, AstHumanReadable.Namespace));
+			NamespaceDeclaration astNS = GetCodeNamespace(typeDef.Namespace);
 			if (astNS != null) {
 				astNS.AddChild(astType, NamespaceDeclaration.MemberRole);
 			} else {
@@ -268,7 +263,7 @@ namespace ICSharpCode.Decompiler.Ast
 			ConvertAttributes(astType, typeDef);
 			astType.AddAnnotation(typeDef);
 			astType.Modifiers = ConvertModifiers(typeDef);
-            astType.Name = AstHumanReadable.MakeReadable(typeDef, CleanName(typeDef.Name), AstHumanReadable.Type);
+			astType.Name = CleanName(typeDef.Name);
 			
 			if (typeDef.IsEnum) {  // NB: Enum is value type
 				astType.ClassType = ClassType.Enum;
@@ -301,7 +296,8 @@ namespace ICSharpCode.Decompiler.Ast
 						}
 					} else {
 						EnumMemberDeclaration enumMember = new EnumMemberDeclaration();
-						enumMember.Name = AstHumanReadable.MakeReadable(field, CleanName(field.Name), AstHumanReadable.Field);
+						enumMember.AddAnnotation(field);
+						enumMember.Name = CleanName(field.Name);
 						long memberValue = (long)CSharpPrimitiveCast.Cast(TypeCode.Int64, field.Constant, false);
 						if (forcePrintingInitializers || memberValue != expectedEnumMemberValue) {
 							enumMember.AddChild(new PrimitiveExpression(field.Constant), EnumMemberDeclaration.InitializerRole);
@@ -459,11 +455,10 @@ namespace ICSharpCode.Decompiler.Ast
 				ApplyTypeArgumentsTo(baseType, typeArguments);
 				return baseType;
 			} else if (type is GenericParameter) {
-                return new SimpleType(AstHumanReadable.MakeReadable(type, type.Name, AstHumanReadable.GenericType));
+				return new SimpleType(type.Name);
 			} else if (type.IsNested) {
 				AstType typeRef = ConvertType(type.DeclaringType, typeAttributes, ref typeIndex, options & ~ConvertTypeOptions.IncludeTypeParameterDefinitions);
 				string namepart = ICSharpCode.NRefactory.TypeSystem.ReflectionHelper.SplitTypeParameterCountFromReflectionName(type.Name);
-                namepart = AstHumanReadable.MakeReadable(type, namepart, AstHumanReadable.Type);
 				MemberType memberType = new MemberType { Target = typeRef, MemberName = namepart };
 				memberType.AddAnnotation(type);
 				if ((options & ConvertTypeOptions.IncludeTypeParameterDefinitions) == ConvertTypeOptions.IncludeTypeParameterDefinitions) {
@@ -472,8 +467,7 @@ namespace ICSharpCode.Decompiler.Ast
 				return memberType;
 			} else {
 				string ns = type.Namespace ?? string.Empty;
-                ns = AstHumanReadable.MakeReadable(type, ns, AstHumanReadable.Namespace);
-				string name = AstHumanReadable.MakeReadable(type, type.Name, null);
+				string name = type.Name;
 				if (name == null)
 					throw new InvalidOperationException("type.Name returned null. Type: " + type.ToString());
 				
@@ -548,7 +542,7 @@ namespace ICSharpCode.Decompiler.Ast
 			if (type.HasGenericParameters) {
 				List<AstType> typeArguments = new List<AstType>();
 				foreach (GenericParameter gp in type.GenericParameters) {
-                    typeArguments.Add(new SimpleType(AstHumanReadable.MakeReadable(gp, gp.Name, AstHumanReadable.GenericType)));
+					typeArguments.Add(new SimpleType(gp.Name));
 				}
 				ApplyTypeArgumentsTo(astType, typeArguments);
 			}
@@ -731,25 +725,21 @@ namespace ICSharpCode.Decompiler.Ast
 
 		AttributedNode CreateMethod(MethodDefinition methodDef)
 		{
-			// Create mapping - used in debugger
-			CreateCodeMappings(methodDef.MetadataToken.ToInt32(), methodDef);
-			MemberMapping methodMapping = methodDef.CreateCodeMapping(this.CodeMappings[methodDef.MetadataToken.ToInt32()]);
-			
-			MethodDeclaration astMethod = new MethodDeclaration().WithAnnotation(methodMapping);
+			MethodDeclaration astMethod = new MethodDeclaration();
 			astMethod.AddAnnotation(methodDef);
 			astMethod.ReturnType = ConvertType(methodDef.ReturnType, methodDef.MethodReturnType);
-			astMethod.Name = AstHumanReadable.MakeReadable(methodDef, CleanName(methodDef.Name), AstHumanReadable.Method);
+			astMethod.Name = CleanName(methodDef.Name);
 			astMethod.TypeParameters.AddRange(MakeTypeParameters(methodDef.GenericParameters));
 			astMethod.Parameters.AddRange(MakeParameters(methodDef));
 			// constraints for override and explicit interface implementation methods are inherited from the base method, so they cannot be specified directly
 			if (!methodDef.IsVirtual || (methodDef.IsNewSlot && !methodDef.IsPrivate)) astMethod.Constraints.AddRange(MakeConstraints(methodDef.GenericParameters));
 			if (!methodDef.DeclaringType.IsInterface) {
-				if (!methodDef.HasOverrides) {
+				if (IsExplicitInterfaceImplementation(methodDef)) {
+					astMethod.PrivateImplementationType = ConvertType(methodDef.Overrides.First().DeclaringType);
+				} else {
 					astMethod.Modifiers = ConvertModifiers(methodDef);
 					if (methodDef.IsVirtual == methodDef.IsNewSlot)
 						SetNewModifier(astMethod);
-				} else {
-					astMethod.PrivateImplementationType = ConvertType(methodDef.Overrides.First().DeclaringType);
 				}
 				astMethod.Body = CreateMethodBody(methodDef, astMethod.Parameters);
 			}
@@ -779,12 +769,17 @@ namespace ICSharpCode.Decompiler.Ast
 			}
 			return astMethod;
 		}
+		
+		bool IsExplicitInterfaceImplementation(MethodDefinition methodDef)
+		{
+			return methodDef.HasOverrides && methodDef.IsPrivate;
+		}
 
 		IEnumerable<TypeParameterDeclaration> MakeTypeParameters(IEnumerable<GenericParameter> genericParameters)
 		{
 			foreach (var gp in genericParameters) {
 				TypeParameterDeclaration tp = new TypeParameterDeclaration();
-                tp.Name = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), AstHumanReadable.GenericType);
+				tp.Name = CleanName(gp.Name);
 				if (gp.IsContravariant)
 					tp.Variance = VarianceModifier.Contravariant;
 				else if (gp.IsCovariant)
@@ -798,7 +793,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			foreach (var gp in genericParameters) {
 				Constraint c = new Constraint();
-                c.TypeParameter = AstHumanReadable.MakeReadable(gp, CleanName(gp.Name), AstHumanReadable.GenericType);
+				c.TypeParameter = CleanName(gp.Name);
 				// class/struct must be first
 				if (gp.HasReferenceTypeConstraint)
 					c.BaseTypes.Add(new PrimitiveType("class"));
@@ -820,10 +815,6 @@ namespace ICSharpCode.Decompiler.Ast
 		
 		ConstructorDeclaration CreateConstructor(MethodDefinition methodDef)
 		{
-			// Create mapping - used in debugger
-			CreateCodeMappings(methodDef.MetadataToken.ToInt32(), methodDef);
-			MemberMapping methodMapping = methodDef.CreateCodeMapping(this.CodeMappings[methodDef.MetadataToken.ToInt32()]);
-			
 			ConstructorDeclaration astMethod = new ConstructorDeclaration();
 			astMethod.AddAnnotation(methodDef);
 			astMethod.Modifiers = ConvertModifiers(methodDef);
@@ -831,11 +822,10 @@ namespace ICSharpCode.Decompiler.Ast
 				// don't show visibility for static ctors
 				astMethod.Modifiers &= ~Modifiers.VisibilityMask;
 			}
-			astMethod.Name = AstHumanReadable.MakeReadable(methodDef.DeclaringType, CleanName(methodDef.DeclaringType.Name), AstHumanReadable.Type);
+			astMethod.Name = CleanName(methodDef.DeclaringType.Name);
 			astMethod.Parameters.AddRange(MakeParameters(methodDef));
 			astMethod.Body = CreateMethodBody(methodDef, astMethod.Parameters);
 			ConvertAttributes(astMethod, methodDef);
-			astMethod.WithAnnotation(methodMapping);
 			if (methodDef.IsStatic && methodDef.DeclaringType.IsBeforeFieldInit && !astMethod.Body.IsNull) {
 				astMethod.Body.InsertChildAfter(null, new Comment(" Note: this type is marked as 'beforefieldinit'."), AstNode.Roles.Comment);
 			}
@@ -862,7 +852,7 @@ namespace ICSharpCode.Decompiler.Ast
 			var accessor = propDef.GetMethod ?? propDef.SetMethod;
 			Modifiers getterModifiers = Modifiers.None;
 			Modifiers setterModifiers = Modifiers.None;
-			if (accessor.HasOverrides) {
+			if (IsExplicitInterfaceImplementation(accessor)) {
 				astProp.PrivateImplementationType = ConvertType(accessor.Overrides.First().DeclaringType);
 			} else if (!propDef.DeclaringType.IsInterface) {
 				getterModifiers = ConvertModifiers(propDef.GetMethod);
@@ -884,14 +874,10 @@ namespace ICSharpCode.Decompiler.Ast
 					// TODO: add some kind of notification (a comment?) about possible problems with decompiled code due to unresolved references.
 				}
 			}
-			astProp.Name = AstHumanReadable.MakeReadable(propDef, CleanName(propDef.Name), AstHumanReadable.Property);
+			astProp.Name = CleanName(propDef.Name);
 			astProp.ReturnType = ConvertType(propDef.PropertyType, propDef);
 			
 			if (propDef.GetMethod != null) {
-				// Create mapping - used in debugger
-				CreateCodeMappings(propDef.GetMethod.MetadataToken.ToInt32(), propDef);
-				MemberMapping methodMapping = propDef.GetMethod.CreateCodeMapping(this.CodeMappings[propDef.GetMethod.MetadataToken.ToInt32()], propDef);
-				
 				astProp.Getter = new Accessor();
 				astProp.Getter.Body = CreateMethodBody(propDef.GetMethod);
 				astProp.Getter.AddAnnotation(propDef.GetMethod);
@@ -899,14 +885,8 @@ namespace ICSharpCode.Decompiler.Ast
 				
 				if ((getterModifiers & Modifiers.VisibilityMask) != (astProp.Modifiers & Modifiers.VisibilityMask))
 					astProp.Getter.Modifiers = getterModifiers & Modifiers.VisibilityMask;
-				
-				astProp.Getter.WithAnnotation(methodMapping);
 			}
 			if (propDef.SetMethod != null) {
-				// Create mapping - used in debugger
-				CreateCodeMappings(propDef.SetMethod.MetadataToken.ToInt32(), propDef);
-				MemberMapping methodMapping = propDef.SetMethod.CreateCodeMapping(this.CodeMappings[propDef.SetMethod.MetadataToken.ToInt32()], propDef);
-				
 				astProp.Setter = new Accessor();
 				astProp.Setter.Body = CreateMethodBody(propDef.SetMethod);
 				astProp.Setter.AddAnnotation(propDef.SetMethod);
@@ -921,8 +901,6 @@ namespace ICSharpCode.Decompiler.Ast
 				
 				if ((setterModifiers & Modifiers.VisibilityMask) != (astProp.Modifiers & Modifiers.VisibilityMask))
 					astProp.Setter.Modifiers = setterModifiers & Modifiers.VisibilityMask;
-				
-				astProp.Setter.WithAnnotation(methodMapping);
 			}
 			ConvertCustomAttributes(astProp, propDef);
 
@@ -957,7 +935,7 @@ namespace ICSharpCode.Decompiler.Ast
 				EventDeclaration astEvent = new EventDeclaration();
 				ConvertCustomAttributes(astEvent, eventDef);
 				astEvent.AddAnnotation(eventDef);
-                astEvent.Variables.Add(new VariableInitializer(AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), AstHumanReadable.Event)));
+				astEvent.Variables.Add(new VariableInitializer(CleanName(eventDef.Name)));
 				astEvent.ReturnType = ConvertType(eventDef.EventType, eventDef);
 				if (!eventDef.DeclaringType.IsInterface)
 					astEvent.Modifiers = ConvertModifiers(eventDef.AddMethod);
@@ -966,36 +944,24 @@ namespace ICSharpCode.Decompiler.Ast
 				CustomEventDeclaration astEvent = new CustomEventDeclaration();
 				ConvertCustomAttributes(astEvent, eventDef);
 				astEvent.AddAnnotation(eventDef);
-                astEvent.Name = AstHumanReadable.MakeReadable(eventDef, CleanName(eventDef.Name), AstHumanReadable.Event);
+				astEvent.Name = CleanName(eventDef.Name);
 				astEvent.ReturnType = ConvertType(eventDef.EventType, eventDef);
-				if (eventDef.AddMethod == null || !eventDef.AddMethod.HasOverrides)
+				if (eventDef.AddMethod == null || !IsExplicitInterfaceImplementation(eventDef.AddMethod))
 					astEvent.Modifiers = ConvertModifiers(eventDef.AddMethod);
 				else
 					astEvent.PrivateImplementationType = ConvertType(eventDef.AddMethod.Overrides.First().DeclaringType);
 				
 				if (eventDef.AddMethod != null) {
-					// Create mapping - used in debugger
-					CreateCodeMappings(eventDef.AddMethod.MetadataToken.ToInt32(), eventDef);
-					MemberMapping methodMapping = eventDef.AddMethod.CreateCodeMapping(this.CodeMappings[eventDef.AddMethod.MetadataToken.ToInt32()], eventDef);
-					
 					astEvent.AddAccessor = new Accessor {
 						Body = CreateMethodBody(eventDef.AddMethod)
 					}.WithAnnotation(eventDef.AddMethod);
 					ConvertAttributes(astEvent.AddAccessor, eventDef.AddMethod);
-					
-					astEvent.AddAccessor.WithAnnotation(methodMapping);
 				}
 				if (eventDef.RemoveMethod != null) {
-					// Create mapping - used in debugger
-					CreateCodeMappings(eventDef.RemoveMethod.MetadataToken.ToInt32(), eventDef);
-					MemberMapping methodMapping = eventDef.RemoveMethod.CreateCodeMapping(this.CodeMappings[eventDef.RemoveMethod.MetadataToken.ToInt32()], eventDef);
-					
 					astEvent.RemoveAccessor = new Accessor {
 						Body = CreateMethodBody(eventDef.RemoveMethod)
 					}.WithAnnotation(eventDef.RemoveMethod);
 					ConvertAttributes(astEvent.RemoveAccessor, eventDef.RemoveMethod);
-					
-					astEvent.RemoveAccessor.WithAnnotation(methodMapping);
 				}
 				MethodDefinition accessor = eventDef.AddMethod ?? eventDef.RemoveMethod;
 				if (accessor.IsVirtual == accessor.IsNewSlot) {
@@ -1010,18 +976,16 @@ namespace ICSharpCode.Decompiler.Ast
 		BlockStatement CreateMethodBody(MethodDefinition method, IEnumerable<ParameterDeclaration> parameters = null)
 		{
 			if (DecompileMethodBodies)
-				return AstMethodBodyBuilder.CreateMethodBody(method, context, parameters, LocalVariables);
+				return AstMethodBodyBuilder.CreateMethodBody(method, context, parameters);
 			else
 				return null;
 		}
 
 		FieldDeclaration CreateField(FieldDefinition fieldDef)
 		{
-			this.DecompiledMemberReferences.Add(fieldDef.MetadataToken.ToInt32(), fieldDef);
-			
 			FieldDeclaration astField = new FieldDeclaration();
 			astField.AddAnnotation(fieldDef);
-            VariableInitializer initializer = new VariableInitializer(AstHumanReadable.MakeReadable(fieldDef, CleanName(fieldDef.Name), AstHumanReadable.Field));
+			VariableInitializer initializer = new VariableInitializer(CleanName(fieldDef.Name));
 			astField.AddChild(initializer, FieldDeclaration.Roles.Variable);
 			astField.ReturnType = ConvertType(fieldDef.FieldType, fieldDef);
 			astField.Modifiers = ConvertModifiers(fieldDef);
@@ -1067,7 +1031,7 @@ namespace ICSharpCode.Decompiler.Ast
 				astParam.AddAnnotation(paramDef);
 				if (!(isLambda && paramDef.ParameterType.ContainsAnonymousType()))
 					astParam.Type = ConvertType(paramDef.ParameterType, paramDef);
-                astParam.Name = AstHumanReadable.MakeReadable(paramDef, paramDef.Name, AstHumanReadable.Parameter);
+				astParam.Name = paramDef.Name;
 				
 				if (paramDef.ParameterType is ByReferenceType) {
 					astParam.ParameterModifier = (!paramDef.IsIn && paramDef.IsOut) ? ParameterModifier.Out : ParameterModifier.Ref;
@@ -1111,6 +1075,11 @@ namespace ICSharpCode.Decompiler.Ast
 			#region SerializableAttribute
 			if (typeDefinition.IsSerializable)
 				attributedNode.Attributes.Add(new AttributeSection(CreateNonCustomAttribute(typeof(SerializableAttribute))));
+			#endregion
+			
+			#region ComImportAttribute
+			if (typeDefinition.IsImport)
+				attributedNode.Attributes.Add(new AttributeSection(CreateNonCustomAttribute(typeof(ComImportAttribute))));
 			#endregion
 			
 			#region StructLayoutAttribute
@@ -1348,7 +1317,7 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			if (customAttributeProvider.HasCustomAttributes) {
 				var attributes = new List<ICSharpCode.NRefactory.CSharp.Attribute>();
-				foreach (var customAttribute in customAttributeProvider.CustomAttributes) {
+				foreach (var customAttribute in customAttributeProvider.CustomAttributes.OrderBy(a => a.AttributeType.FullName)) {
 					if (customAttribute.AttributeType.Name == "ExtensionAttribute" && customAttribute.AttributeType.Namespace == "System.Runtime.CompilerServices") {
 						// don't show the ExtensionAttribute (it's converted to the 'this' modifier)
 						continue;
@@ -1418,8 +1387,8 @@ namespace ICSharpCode.Decompiler.Ast
 			if (!secDeclProvider.HasSecurityDeclarations)
 				return;
 			var attributes = new List<ICSharpCode.NRefactory.CSharp.Attribute>();
-			foreach (var secDecl in secDeclProvider.SecurityDeclarations) {
-				foreach (var secAttribute in secDecl.SecurityAttributes) {
+			foreach (var secDecl in secDeclProvider.SecurityDeclarations.OrderBy(d => d.Action)) {
+				foreach (var secAttribute in secDecl.SecurityAttributes.OrderBy(a => a.AttributeType.FullName)) {
 					var attribute = new ICSharpCode.NRefactory.CSharp.Attribute();
 					attribute.AddAnnotation(secAttribute);
 					attribute.Type = ConvertType(secAttribute.AttributeType);
@@ -1482,6 +1451,7 @@ namespace ICSharpCode.Decompiler.Ast
 				ArrayType arrayType = argument.Type as ArrayType;
 				return new ArrayCreateExpression {
 					Type = ConvertType(arrayType != null ? arrayType.ElementType : argument.Type),
+					AdditionalArraySpecifiers = { new ArraySpecifier() },
 					Initializer = arrayInit
 				};
 			} else if (argument.Value is CustomAttributeArgument) {
@@ -1514,7 +1484,7 @@ namespace ICSharpCode.Decompiler.Ast
 					TypeCode enumBaseTypeCode = TypeCode.Int32;
 					foreach (FieldDefinition field in enumDefinition.Fields) {
 						if (field.IsStatic && object.Equals(CSharpPrimitiveCast.Cast(TypeCode.Int64, field.Constant, false), val))
-                            return ConvertType(type).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
+							return ConvertType(type).Member(field.Name).WithAnnotation(field);
 						else if (!field.IsStatic && field.IsRuntimeSpecialName)
 							enumBaseTypeCode = TypeAnalysis.GetTypeCode(field.FieldType); // use primitive type of the enum
 					}
@@ -1544,7 +1514,7 @@ namespace ICSharpCode.Decompiler.Ast
 								continue;	// skip None enum value
 
 							if ((fieldValue & enumValue) == fieldValue) {
-                                var fieldExpression = ConvertType(type).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
+								var fieldExpression = ConvertType(type).Member(field.Name).WithAnnotation(field);
 								if (expr == null)
 									expr = fieldExpression;
 								else
@@ -1553,7 +1523,7 @@ namespace ICSharpCode.Decompiler.Ast
 								enumValue &= ~fieldValue;
 							}
 							if ((fieldValue & negatedEnumValue) == fieldValue) {
-                                var fieldExpression = ConvertType(type).Member(AstHumanReadable.MakeReadable(field, field.Name, AstHumanReadable.Field)).WithAnnotation(field);
+								var fieldExpression = ConvertType(type).Member(field.Name).WithAnnotation(field);
 								if (negatedExpr == null)
 									negatedExpr = fieldExpression;
 								else
@@ -1664,11 +1634,5 @@ namespace ICSharpCode.Decompiler.Ast
 			                   && (condition == null || condition(m))
 			                   && TypesHierarchyHelpers.IsVisibleFromDerived(m, derived.DeclaringType));
 		}
-		
-		/// <summary>
-		/// Gets the local variables for the current decompiled type, method, etc.
-		/// <remarks>The key is the metadata token.</remarks>
-		/// </summary>
-		public ConcurrentDictionary<int, IEnumerable<ILVariable>> LocalVariables { get; private set; }
 	}
 }

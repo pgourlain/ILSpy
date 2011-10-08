@@ -50,16 +50,11 @@ namespace ICSharpCode.Decompiler.Ast
 		/// <param name="context">Decompilation context.</param>
 		/// <param name="parameters">Parameter declarations of the method being decompiled.
 		/// These are used to update the parameter names when the decompiler generates names for the parameters.</param>
-		/// <param name="localVariables">Local variables storage that will be filled/updated with the local variables.</param>
 		/// <returns>Block for the method body</returns>
 		public static BlockStatement CreateMethodBody(MethodDefinition methodDef,
 		                                              DecompilerContext context,
-		                                              IEnumerable<ParameterDeclaration> parameters = null,
-		                                              ConcurrentDictionary<int, IEnumerable<ILVariable>> localVariables = null)
+		                                              IEnumerable<ParameterDeclaration> parameters = null)
 		{
-			if (localVariables == null)
-				localVariables = new ConcurrentDictionary<int, IEnumerable<ILVariable>>();
-			
 			MethodDefinition oldCurrentMethod = context.CurrentMethod;
 			Debug.Assert(oldCurrentMethod == null || oldCurrentMethod == methodDef);
 			context.CurrentMethod = methodDef;
@@ -69,10 +64,10 @@ namespace ICSharpCode.Decompiler.Ast
 				builder.context = context;
 				builder.typeSystem = methodDef.Module.TypeSystem;
 				if (Debugger.IsAttached) {
-					return builder.CreateMethodBody(parameters, localVariables);
+					return builder.CreateMethodBody(parameters);
 				} else {
 					try {
-						return builder.CreateMethodBody(parameters, localVariables);
+						return builder.CreateMethodBody(parameters);
 					} catch (OperationCanceledException) {
 						throw;
 					} catch (Exception ex) {
@@ -84,13 +79,11 @@ namespace ICSharpCode.Decompiler.Ast
 			}
 		}
 		
-		public BlockStatement CreateMethodBody(IEnumerable<ParameterDeclaration> parameters,
-		                                       ConcurrentDictionary<int, IEnumerable<ILVariable>> localVariables)
+		public BlockStatement CreateMethodBody(IEnumerable<ParameterDeclaration> parameters)
 		{
-			if (methodDef.Body == null) return null;
-			
-			if (localVariables == null)
-				throw new ArgumentException("localVariables must be instantiated");
+			if (methodDef.Body == null) {
+				return null;
+			}
 			
 			context.CancellationToken.ThrowIfCancellationRequested();
 			ILBlock ilMethod = new ILBlock();
@@ -102,18 +95,17 @@ namespace ICSharpCode.Decompiler.Ast
 			bodyGraph.Optimize(context, ilMethod);
 			context.CancellationToken.ThrowIfCancellationRequested();
 			
-			var allVariables = ilMethod.GetSelfAndChildrenRecursive<ILExpression>().Select(e => e.Operand as ILVariable)
+			var localVariables = ilMethod.GetSelfAndChildrenRecursive<ILExpression>().Select(e => e.Operand as ILVariable)
 				.Where(v => v != null && !v.IsParameter).Distinct();
 			Debug.Assert(context.CurrentMethod == methodDef);
-			NameVariables.AssignNamesToVariables(context, astBuilder.Parameters, allVariables, ilMethod);
+			NameVariables.AssignNamesToVariables(context, astBuilder.Parameters, localVariables, ilMethod);
 			
 			if (parameters != null) {
 				foreach (var pair in (from p in parameters
 				                      join v in astBuilder.Parameters on p.Annotation<ParameterDefinition>() equals v.OriginalParameter
 				                      select new { p, v.Name }))
 				{
-                    //TOOD:PGO:makeReadable
-                    pair.p.Name = AstHumanReadable.MakeReadable(pair.p.Annotation<ParameterDefinition>(), pair.Name, AstHumanReadable.Parameter);
+					pair.p.Name = pair.Name;
 				}
 			}
 			
@@ -128,13 +120,12 @@ namespace ICSharpCode.Decompiler.Ast
 					type = new SimpleType("var");
 				else
 					type = AstBuilder.ConvertType(v.Type);
-				var newVarDecl = new VariableDeclarationStatement(type, AstHumanReadable.MakeReadable(v.OriginalVariable, v.Name, AstHumanReadable.Variable));
+				var newVarDecl = new VariableDeclarationStatement(type, v.Name);
+				newVarDecl.Variables.Single().AddAnnotation(v);
 				astBlock.Statements.InsertBefore(insertionPoint, newVarDecl);
 			}
 			
-			// store the variables - used for debugger
-			int token = methodDef.MetadataToken.ToInt32();
-			localVariables.AddOrUpdate(token, allVariables, (key, oldValue) => allVariables);
+			astBlock.AddAnnotation(new MemberMapping(methodDef));
 			
 			return astBlock;
 		}
@@ -211,7 +202,7 @@ namespace ICSharpCode.Decompiler.Ast
 								Type = AstBuilder.ConvertType(catchClause.ExceptionType),
 								VariableName = catchClause.ExceptionVariable == null ? null : catchClause.ExceptionVariable.Name,
 								Body = TransformBlock(catchClause)
-							});
+							}.WithAnnotation(catchClause.ExceptionVariable));
 					}
 				}
 				if (tryCatchNode.FinallyBlock != null)
@@ -430,7 +421,13 @@ namespace ICSharpCode.Decompiler.Ast
 				case ILCode.CompoundAssignment:
 					{
 						CastExpression cast = arg1 as CastExpression;
-						BinaryOperatorExpression boe = (BinaryOperatorExpression)(cast != null ? cast.Expression : arg1);
+						var boe = cast != null ? (BinaryOperatorExpression)cast.Expression : arg1 as BinaryOperatorExpression;
+						// AssignmentExpression doesn't support overloaded operators so they have to be processed to BinaryOperatorExpression
+						if (boe == null) {
+							var tmp = new ParenthesizedExpression(arg1);
+							ReplaceMethodCallsWithOperators.ProcessInvocationExpression((InvocationExpression)arg1);
+							boe = (BinaryOperatorExpression)tmp.Expression;
+						}
 						var assignment = new Ast.AssignmentExpression {
 							Left = boe.Left.Detach(),
 							Operator = ReplaceMethodCallsWithOperators.GetAssignmentOperatorForBinaryOperator(boe.Operator),
@@ -449,17 +446,25 @@ namespace ICSharpCode.Decompiler.Ast
 					#endregion
 					#region Comparison
 					case ILCode.Ceq: return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.Equality, arg2);
+					case ILCode.Cne: return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.InEquality, arg2);
 					case ILCode.Cgt: return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.GreaterThan, arg2);
 					case ILCode.Cgt_Un: {
 						// can also mean Inequality, when used with object references
 						TypeReference arg1Type = byteCode.Arguments[0].InferredType;
-						if (arg1Type != null && !arg1Type.IsValueType)
-							return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.InEquality, arg2);
-						else
-							return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.GreaterThan, arg2);
+						if (arg1Type != null && !arg1Type.IsValueType) goto case ILCode.Cne;
+						goto case ILCode.Cgt;
 					}
+					case ILCode.Cle_Un: {
+						// can also mean Equality, when used with object references
+						TypeReference arg1Type = byteCode.Arguments[0].InferredType;
+						if (arg1Type != null && !arg1Type.IsValueType) goto case ILCode.Ceq;
+						goto case ILCode.Cle;
+					}
+					case ILCode.Cle: return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.LessThanOrEqual, arg2);
+					case ILCode.Cge_Un:
+					case ILCode.Cge: return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.GreaterThanOrEqual, arg2);
+					case ILCode.Clt_Un:
 					case ILCode.Clt:    return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.LessThan, arg2);
-					case ILCode.Clt_Un: return new Ast.BinaryOperatorExpression(arg1, BinaryOperatorType.LessThan, arg2);
 					#endregion
 					#region Logical
 					case ILCode.LogicNot:   return new Ast.UnaryOperatorExpression(UnaryOperatorType.Not, arg1);
@@ -572,7 +577,7 @@ namespace ICSharpCode.Decompiler.Ast
 					return TransformCall(true, byteCode,  args);
 					case ILCode.Ldftn: {
 						Cecil.MethodReference cecilMethod = ((MethodReference)operand);
-                        var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, AstHumanReadable.Method));
+						var expr = new Ast.IdentifierExpression(cecilMethod.Name);
 						expr.TypeArguments.AddRange(ConvertTypeArguments(cecilMethod));
 						expr.AddAnnotation(cecilMethod);
 						return new IdentifierExpression("ldftn").Invoke(expr)
@@ -580,7 +585,7 @@ namespace ICSharpCode.Decompiler.Ast
 					}
 					case ILCode.Ldvirtftn: {
 						Cecil.MethodReference cecilMethod = ((MethodReference)operand);
-                        var expr = new Ast.IdentifierExpression(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, AstHumanReadable.Method));
+						var expr = new Ast.IdentifierExpression(cecilMethod.Name);
 						expr.TypeArguments.AddRange(ConvertTypeArguments(cecilMethod));
 						expr.AddAnnotation(cecilMethod);
 						return new IdentifierExpression("ldvirtftn").Invoke(expr)
@@ -608,50 +613,38 @@ namespace ICSharpCode.Decompiler.Ast
 				case ILCode.Ldc_Decimal:
 					return new Ast.PrimitiveExpression(operand);
 				case ILCode.Ldfld:
-                    var fi = (FieldReference)operand;
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-                    return arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand);
+					return arg1.Member(((FieldReference) operand).Name).WithAnnotation(operand);
 				case ILCode.Ldsfld:
-                    fi = (FieldReference)operand;
-					return AstBuilder.ConvertType(fi.DeclaringType)
-                        .Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand);
+					return AstBuilder.ConvertType(((FieldReference)operand).DeclaringType)
+						.Member(((FieldReference)operand).Name).WithAnnotation(operand);
 				case ILCode.Stfld:
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-                    fi = (FieldReference)operand;
-                    return new AssignmentExpression(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand), arg2);
+					return new AssignmentExpression(arg1.Member(((FieldReference) operand).Name).WithAnnotation(operand), arg2);
 				case ILCode.Stsfld:
-                    fi = (FieldReference)operand;
-
 					return new AssignmentExpression(
-						AstBuilder.ConvertType(fi.DeclaringType)
-                        .Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand),
+						AstBuilder.ConvertType(((FieldReference)operand).DeclaringType)
+						.Member(((FieldReference)operand).Name).WithAnnotation(operand),
 						arg1);
 				case ILCode.Ldflda:
-                    fi = (FieldReference)operand;
-
 					if (arg1 is DirectionExpression)
 						arg1 = ((DirectionExpression)arg1).Expression.Detach();
-                    return MakeRef(arg1.Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand));
+					return MakeRef(arg1.Member(((FieldReference) operand).Name).WithAnnotation(operand));
 				case ILCode.Ldsflda:
-                    fi = (FieldReference)operand;
 					return MakeRef(
-						AstBuilder.ConvertType(fi.DeclaringType)
-                        .Member(AstHumanReadable.MakeReadable(fi, fi.Name, AstHumanReadable.Field)).WithAnnotation(operand));
+						AstBuilder.ConvertType(((FieldReference)operand).DeclaringType)
+						.Member(((FieldReference)operand).Name).WithAnnotation(operand));
 					case ILCode.Ldloc: {
 						ILVariable v = (ILVariable)operand;
 						if (!v.IsParameter)
 							localVariablesToDefine.Add((ILVariable)operand);
 						Expression expr;
-                        if (v.IsParameter && v.OriginalParameter.Index < 0)
-                            expr = new ThisReferenceExpression();
-                        else
-                        {
-                            var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) 
-                                : AstHumanReadable.MakeReadable(v.OriginalVariable, v.Name, AstHumanReadable.Variable);
-                            expr = new Ast.IdentifierExpression(pName).WithAnnotation(operand);
-                        }
+						if (v.IsParameter && v.OriginalParameter.Index < 0)
+							expr = new ThisReferenceExpression();
+						else
+							expr = new Ast.IdentifierExpression(((ILVariable)operand).Name).WithAnnotation(operand);
 						return v.IsParameter && v.Type is ByReferenceType ? MakeRef(expr) : expr;
 					}
 					case ILCode.Ldloca: {
@@ -660,9 +653,7 @@ namespace ICSharpCode.Decompiler.Ast
 							return MakeRef(new ThisReferenceExpression());
 						if (!v.IsParameter)
 							localVariablesToDefine.Add((ILVariable)operand);
-                        var pName = v.IsParameter ? AstHumanReadable.MakeReadable(v.OriginalParameter, v.Name, AstHumanReadable.Parameter) 
-                            : AstHumanReadable.MakeReadable(v.OriginalVariable, v.Name, AstHumanReadable.Variable);
-						return MakeRef(new Ast.IdentifierExpression(pName).WithAnnotation(operand));
+						return MakeRef(new Ast.IdentifierExpression(((ILVariable)operand).Name).WithAnnotation(operand));
 					}
 					case ILCode.Ldnull: return new Ast.NullReferenceExpression();
 					case ILCode.Ldstr:  return new Ast.PrimitiveExpression(operand);
@@ -723,21 +714,40 @@ namespace ICSharpCode.Decompiler.Ast
 								return ace;
 							}
 						}
-						var oce = new Ast.ObjectCreateExpression();
 						if (declaringType.IsAnonymousType()) {
 							MethodDefinition ctor = ((MethodReference)operand).Resolve();
 							if (methodDef != null) {
-								oce.Initializer = new ArrayInitializerExpression();
+								AnonymousTypeCreateExpression atce = new AnonymousTypeCreateExpression();
+								bool allNamesCanBeInferred = true;
 								for (int i = 0; i < args.Count; i++) {
-									oce.Initializer.Elements.Add(
-										new NamedArgumentExpression {
-											Identifier = ctor.Parameters[i].Name,
-											Expression = args[i]
-										});
+									string inferredName;
+									if (args[i] is IdentifierExpression)
+										inferredName = ((IdentifierExpression)args[i]).Identifier;
+									else if (args[i] is MemberReferenceExpression)
+										inferredName = ((MemberReferenceExpression)args[i]).MemberName;
+									else
+										inferredName = null;
+									
+									if (inferredName != ctor.Parameters[i].Name) {
+										allNamesCanBeInferred = false;
+										break;
+									}
 								}
+								if (allNamesCanBeInferred) {
+									atce.Initializers.AddRange(args);
+								} else {
+									for (int i = 0; i < args.Count; i++) {
+										atce.Initializers.Add(
+											new NamedExpression {
+												Identifier = ctor.Parameters[i].Name,
+												Expression = args[i]
+											});
+									}
+								}
+								return atce;
 							}
-							return oce;
 						}
+						var oce = new Ast.ObjectCreateExpression();
 						oce.Type = AstBuilder.ConvertType(declaringType);
 						oce.Arguments.AddRange(args);
 						return oce.WithAnnotation(operand);
@@ -758,11 +768,7 @@ namespace ICSharpCode.Decompiler.Ast
 						ILVariable locVar = (ILVariable)operand;
 						if (!locVar.IsParameter)
 							localVariablesToDefine.Add(locVar);
-                        var pName = locVar.IsParameter
-                            ? AstHumanReadable.MakeReadable(locVar.OriginalParameter, locVar.Name, AstHumanReadable.Parameter)
-                            : AstHumanReadable.MakeReadable(locVar.OriginalVariable, locVar.Name, AstHumanReadable.Variable);
-
-						return new Ast.AssignmentExpression(new Ast.IdentifierExpression(pName).WithAnnotation(locVar), arg1);
+						return new Ast.AssignmentExpression(new Ast.IdentifierExpression(locVar.Name).WithAnnotation(locVar), arg1);
 					}
 					case ILCode.Switch: return InlineAssembly(byteCode, args);
 					case ILCode.Tail: return InlineAssembly(byteCode, args);
@@ -772,7 +778,7 @@ namespace ICSharpCode.Decompiler.Ast
 				case ILCode.YieldBreak:
 					return new Ast.YieldBreakStatement();
 				case ILCode.YieldReturn:
-					return new Ast.YieldStatement { Expression = arg1 };
+					return new Ast.YieldReturnStatement { Expression = arg1 };
 				case ILCode.InitObject:
 				case ILCode.InitCollection:
 					{
@@ -782,7 +788,7 @@ namespace ICSharpCode.Decompiler.Ast
 							if (m.Success) {
 								MemberReferenceExpression mre = m.Get<MemberReferenceExpression>("left").Single();
 								initializer.Elements.Add(
-									new NamedArgumentExpression {
+									new NamedExpression {
 										Identifier = mre.MemberName,
 										Expression = m.Get<Expression>("right").Single().Detach()
 									}.CopyAnnotationsFrom(mre));
@@ -819,8 +825,12 @@ namespace ICSharpCode.Decompiler.Ast
 					}
 				case ILCode.InitializedObject:
 					return new InitializedObjectExpression();
+				case ILCode.Wrap:
+					return arg1.WithAnnotation(PushNegation.LiftedOperatorAnnotation);
 				case ILCode.AddressOf:
 					return MakeRef(arg1);
+				case ILCode.NullableOf:
+				case ILCode.ValueOf: return arg1;
 				default:
 					throw new Exception("Unknown OpCode: " + byteCode.Code);
 			}
@@ -978,29 +988,29 @@ namespace ICSharpCode.Decompiler.Ast
 				if (cecilMethodDef.IsGetter && methodArgs.Count == 0) {
 					foreach (var prop in cecilMethodDef.DeclaringType.Properties) {
 						if (prop.GetMethod == cecilMethodDef)
-							return target.Member(prop.Name).WithAnnotation(prop);
+							return target.Member(prop.Name).WithAnnotation(prop).WithAnnotation(cecilMethod);
 					}
 				} else if (cecilMethodDef.IsGetter) { // with parameters
 					PropertyDefinition indexer = GetIndexer(cecilMethodDef);
 					if (indexer != null)
-						return target.Indexer(methodArgs).WithAnnotation(indexer);
+						return target.Indexer(methodArgs).WithAnnotation(indexer).WithAnnotation(cecilMethod);
 				} else if (cecilMethodDef.IsSetter && methodArgs.Count == 1) {
 					foreach (var prop in cecilMethodDef.DeclaringType.Properties) {
 						if (prop.SetMethod == cecilMethodDef)
-							return new Ast.AssignmentExpression(target.Member(prop.Name).WithAnnotation(prop), methodArgs[0]);
+							return new Ast.AssignmentExpression(target.Member(prop.Name).WithAnnotation(prop).WithAnnotation(cecilMethod), methodArgs[0]);
 					}
 				} else if (cecilMethodDef.IsSetter && methodArgs.Count > 1) {
 					PropertyDefinition indexer = GetIndexer(cecilMethodDef);
 					if (indexer != null)
 						return new AssignmentExpression(
-							target.Indexer(methodArgs.GetRange(0, methodArgs.Count - 1)).WithAnnotation(indexer),
+							target.Indexer(methodArgs.GetRange(0, methodArgs.Count - 1)).WithAnnotation(indexer).WithAnnotation(cecilMethod),
 							methodArgs[methodArgs.Count - 1]
 						);
 				} else if (cecilMethodDef.IsAddOn && methodArgs.Count == 1) {
 					foreach (var ev in cecilMethodDef.DeclaringType.Events) {
 						if (ev.AddMethod == cecilMethodDef) {
 							return new Ast.AssignmentExpression {
-								Left = target.Member(ev.Name).WithAnnotation(ev),
+								Left = target.Member(ev.Name).WithAnnotation(ev).WithAnnotation(cecilMethod),
 								Operator = AssignmentOperatorType.Add,
 								Right = methodArgs[0]
 							};
@@ -1010,7 +1020,7 @@ namespace ICSharpCode.Decompiler.Ast
 					foreach (var ev in cecilMethodDef.DeclaringType.Events) {
 						if (ev.RemoveMethod == cecilMethodDef) {
 							return new Ast.AssignmentExpression {
-								Left = target.Member(ev.Name).WithAnnotation(ev),
+								Left = target.Member(ev.Name).WithAnnotation(ev).WithAnnotation(cecilMethod),
 								Operator = AssignmentOperatorType.Subtract,
 								Right = methodArgs[0]
 							};
@@ -1018,12 +1028,12 @@ namespace ICSharpCode.Decompiler.Ast
 					}
 				} else if (cecilMethodDef.Name == "Invoke" && cecilMethodDef.DeclaringType.BaseType != null && cecilMethodDef.DeclaringType.BaseType.FullName == "System.MulticastDelegate") {
 					AdjustArgumentsForMethodCall(cecilMethod, methodArgs);
-					return target.Invoke(methodArgs);
+					return target.Invoke(methodArgs).WithAnnotation(cecilMethod);
 				}
 			}
 			// Default invocation
 			AdjustArgumentsForMethodCall(cecilMethodDef ?? cecilMethod, methodArgs);
-			return target.Invoke(AstHumanReadable.MakeReadable(cecilMethod, cecilMethod.Name, AstHumanReadable.Method), ConvertTypeArguments(cecilMethod), methodArgs).WithAnnotation(cecilMethod);
+			return target.Invoke(cecilMethod.Name, ConvertTypeArguments(cecilMethod), methodArgs).WithAnnotation(cecilMethod);
 		}
 		
 		static void AdjustArgumentsForMethodCall(MethodReference cecilMethod, List<Expression> methodArgs)

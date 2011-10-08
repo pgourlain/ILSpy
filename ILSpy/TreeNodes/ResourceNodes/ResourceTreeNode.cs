@@ -31,7 +31,6 @@ using ICSharpCode.Decompiler;
 using ICSharpCode.ILSpy.TextView;
 using Microsoft.Win32;
 using Mono.Cecil;
-using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -48,7 +47,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			if (r == null)
 				throw new ArgumentNullException("r");
 			this.r = r;
-            this.Name = AstHumanReadable.MakeReadable(r, r.Name, AstHumanReadable.Resource);
 		}
 		
 		public Resource Resource {
@@ -56,7 +54,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		}
 		
 		public override object Text {
-			get { return this.Name; }
+			get { return r.Name; }
 		}
 		
 		public override object Icon {
@@ -67,7 +65,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		{
 			if (!settings.ShowInternalApi && (r.Attributes & ManifestResourceAttributes.VisibilityMask) == ManifestResourceAttributes.Private)
 				return FilterResult.Hidden;
-			if (settings.SearchTermMatches(this.Name))
+			if (settings.SearchTermMatches(r.Name))
 				return FilterResult.Match;
 			else
 				return FilterResult.Hidden;
@@ -75,7 +73,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		
 		public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
 		{
-			language.WriteCommentLine(output, string.Format("{0} ({1}, {2})", this.Name, r.ResourceType, r.Attributes));
+			language.WriteCommentLine(output, string.Format("{0} ({1}, {2})", r.Name, r.ResourceType, r.Attributes));
 			
 			ISmartTextOutput smartOutput = output as ISmartTextOutput;
 			if (smartOutput != null && r is EmbeddedResource) {
@@ -138,11 +136,14 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			return result ?? new ResourceTreeNode(resource);
 		}
 
-        public override bool IsPublicAccess()
+        public override bool IsPublicAPI
         {
-            if (r != null)
-                return r.IsPublic;
-            return base.IsPublicAccess();
+            get
+            {
+                if (r != null)
+                    return r.IsPublic;
+                return base.IsPublicAPI;
+            }
         }
 	}
 }

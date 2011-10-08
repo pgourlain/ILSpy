@@ -20,7 +20,6 @@ using System;
 using ICSharpCode.Decompiler;
 using ICSharpCode.TreeView;
 using Mono.Cecil;
-using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -36,11 +35,10 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			if (r == null)
 				throw new ArgumentNullException("r");
 			this.r = r;
-            this.Name = AstHumanReadable.MakeReadable(r, r.Name, AstHumanReadable.Module);
 		}
 		
 		public override object Text {
-			get { return this.Name; }
+			get { return r.Name; }
 		}
 		
 		public override object Icon {
@@ -49,7 +47,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		
 		public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
 		{
-			language.WriteCommentLine(output, this.Name);
+			language.WriteCommentLine(output, r.Name);
 		}
 	}
 }

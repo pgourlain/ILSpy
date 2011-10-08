@@ -12,12 +12,6 @@ namespace PgoPlugin.Debugger
 {
     class PgoCallStackPanePresenter : ObservableObject
     {
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
         Dispatcher _currentDispatcher;
 
         private void UiInvoke(Action act)

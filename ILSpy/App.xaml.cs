@@ -17,16 +17,16 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+
+using ICSharpCode.ILSpy.Debugger.Services;
 using ICSharpCode.ILSpy.TextView;
 
 namespace ICSharpCode.ILSpy
@@ -80,6 +80,12 @@ namespace ICSharpCode.ILSpy
 
 
 
+			
+			try {
+				DebuggerService.SetDebugger(compositionContainer.GetExport<IDebugger>());
+			} catch {
+				// unable to find a IDebugger
+			}
 		}
         private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
         {
