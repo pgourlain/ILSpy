@@ -51,6 +51,7 @@
     <Optimize>true</Optimize>
     <DefineConstants>TRACE</DefineConstants>
     <DebugSymbols>false</DebugSymbols>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <StartAction>Project</StartAction>
@@ -196,19 +197,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Interop" />
-    <Folder Include="MetaData" />
-    <Folder Include="Mono.Cecil" />
-    <Folder Include="Mono.Cecil\Mono.Cecil" />
-    <Folder Include="Mono.Cecil\Mono.Cecil.Binary" />
-    <Folder Include="Mono.Cecil\Mono.Cecil.Metadata" />
-    <Folder Include="Mono.Cecil\Mono.Cecil.Signatures" />
-    <Folder Include="NRefactory" />
-    <Folder Include="NRefactory\Ast" />
-    <Folder Include="NRefactory\Visitors" />
-    <Folder Include="Tests" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\..\NRefactory\ICSharpCode.NRefactory.CSharp\ICSharpCode.NRefactory.CSharp.csproj">
       <Project>{53DCA265-3C3C-42F9-B647-F72BA678122B}</Project>
