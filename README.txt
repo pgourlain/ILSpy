@@ -26,4 +26,5 @@ Pierrick Gourlain add somes features in this fork :
 - add search on type and member
 - plugin to sort assemblies in treeview
 - plugin to show tooltip on assembly (version and location)
+- plugin to show local variables while debugging
 

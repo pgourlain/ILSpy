@@ -51,13 +51,13 @@
     <Compile Include="Bookmarks\PgoBookmarksPane.xaml.cs">
       <DependentUpon>PgoBookmarksPane.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Debugger\CallStackCommand.cs" />
+    <Compile Include="Debugger\VariablesCallStackCommand.cs" />
     <Compile Include="Debugger\ObservableObject.cs" />
-    <Compile Include="Debugger\PgoCallStackPane.xaml.cs">
-      <DependentUpon>PgoCallStackPane.xaml</DependentUpon>
+    <Compile Include="Debugger\PgoVariablesCallStackPane.xaml.cs">
+      <DependentUpon>PgoVariablesCallStackPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Debugger\PgoCallStackPanePresenter.cs" />
-    <Compile Include="Debugger\StackViewModel.cs" />
+    <Compile Include="Debugger\VariableViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReloadAssembly\ReloadAssemblyCommand.cs" />
     <Compile Include="SingletonPane.cs" />
@@ -68,9 +68,17 @@
       <Project>{1D18D788-F7EE-4585-A23B-34DC8EC63CB8}</Project>
       <Name>Debugger.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Debugger\ILSpy.Debugger\ILSpy.Debugger.csproj">
+      <Project>{6D3D0F0D-348D-456A-A6ED-E9BD5EFABB6A}</Project>
+      <Name>ILSpy.Debugger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
       <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
       <Name>ICSharpCode.Decompiler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ILSpy.SharpDevelop.LGPL\ILSpy.SharpDevelop.LGPL.csproj">
+      <Project>{704F66F1-5C7F-4326-A7AA-C604A3896D4E}</Project>
+      <Name>ILSpy.SharpDevelop.LGPL</Name>
     </ProjectReference>
     <ProjectReference Include="..\ILSpy\ILSpy.csproj">
       <Project>{1E85EFF9-E370-4683-83E4-8A3D063FF791}</Project>
@@ -96,7 +104,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Debugger\PgoCallStackPane.xaml">
+    <Page Include="Debugger\PgoVariablesCallStackPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

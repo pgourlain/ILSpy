@@ -209,6 +209,18 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			return true;
 		}
 		
+		public override object VisitInvocationExpression(InvocationExpression invocationExpression, object data)
+		{
+			if (context.Settings.ExpressionTrees && ExpressionTreeConverter.CouldBeExpressionTree(invocationExpression)) {
+				Expression converted = ExpressionTreeConverter.TryConvert(context, invocationExpression);
+				if (converted != null) {
+					invocationExpression.ReplaceWith(converted);
+					return converted.AcceptVisitor(this, data);
+				}
+			}
+			return base.VisitInvocationExpression(invocationExpression, data);
+		}
+		
 		#region Track current variables
 		public override object VisitMethodDeclaration(MethodDeclaration methodDeclaration, object data)
 		{
@@ -281,7 +293,7 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 		
 		static readonly ExpressionStatement displayClassAssignmentPattern =
 			new ExpressionStatement(new AssignmentExpression(
-				new NamedNode("variable", new IdentifierExpression()),
+				new NamedNode("variable", new IdentifierExpression(Pattern.AnyString)),
 				new ObjectCreateExpression { Type = new AnyNode("type") }
 			));
 		
@@ -336,7 +348,10 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 					// "variableName.MemberName = right;"
 					ExpressionStatement closureFieldAssignmentPattern = new ExpressionStatement(
 						new AssignmentExpression(
-							new NamedNode("left", new MemberReferenceExpression { Target = new IdentifierExpression(variable.Name) }),
+							new NamedNode("left", new MemberReferenceExpression { 
+							              	Target = new IdentifierExpression(variable.Name),
+							              	MemberName = Pattern.AnyString
+							              }),
 							new AnyNode("right")
 						)
 					);

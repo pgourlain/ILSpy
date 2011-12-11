@@ -7,62 +7,41 @@ using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using System.Windows;
+using ICSharpCode.ILSpy.Debugger.Services;
+using Debugger;
+using Debugger.MetaData;
 
 namespace PgoPlugin.Debugger
 {
-    class PgoCallStackPanePresenter : ObservableObject
+    class PgoVariablesCallStackPanePresenter : ObservableObject
     {
         Dispatcher _currentDispatcher;
+        IDebugger m_currentDebugger;
 
         private void UiInvoke(Action act)
         {
             this._currentDispatcher.BeginInvoke(act);
         }
 
-        public PgoCallStackPanePresenter()
+        public PgoVariablesCallStackPanePresenter()
         {
             _currentDispatcher = Dispatcher.CurrentDispatcher;
         }
 
         internal void ViewReady()
         {
-            //ICSharpCode.ILSpy.Debugger.Services.DebuggerService.CurrentDebugger.IsProcessRunningChanged += new EventHandler(CurrentDebugger_IsProcessRunningChanged);
+            DebuggerService.DebugStarted += new EventHandler(OnDebugStarted);
+            DebuggerService.DebugStopped += new EventHandler(OnDebugStopped);
+            if (DebuggerService.IsDebuggerStarted)
+                OnDebugStarted(null, EventArgs.Empty);
+
+            ICSharpCode.ILSpy.Debugger.Services.DebuggerService.CurrentDebugger.IsProcessRunningChanged += new EventHandler(OnProcessRunningChanged);
         }
 
-        void CurrentDebugger_IsProcessRunningChanged(object sender, EventArgs e)
-        {
-            //WindowsDebugger wd = DebuggerService.CurrentDebugger as WindowsDebugger;
+        public VariableViewModel SelectedItem { get; set; }
 
-            //System.Diagnostics.Trace.WriteLine("Pgo : Begin CurrentDebugger_IsProcessRunningChanged");
-
-            //if (wd != null && wd.DebuggedProcess.IsPaused)
-            //{
-            //    var callstack = wd.DebuggedProcess.SelectedThread.Callstack;
-            //    var viewModels = callstack.Select(x => StackViewModel.FromStackFrame(x)).ToArray();
-            //    UiInvoke(() =>
-            //    {
-            //        _CurrentCallStack.Clear();
-            //        foreach (var item in viewModels)
-            //        {
-            //            _CurrentCallStack.Add(item);
-            //        }
-            //    }); 
-            //}
-            //else
-            //{
-            //    UiInvoke(() =>
-            //        {
-            //            _CurrentCallStack.Clear();
-            //        });
-            //}
-            //System.Diagnostics.Trace.WriteLine("Pgo : End CurrentDebugger_IsProcessRunningChanged");
-        }
-
-
-        public StackViewModel SelectedItem { get; set; }
-
-        ObservableCollection<StackViewModel> _CurrentCallStack = new ObservableCollection<StackViewModel>();
-        public ObservableCollection<StackViewModel> CurrentCallStack
+        ObservableCollection<VariableViewModel> _CurrentCallStack = new ObservableCollection<VariableViewModel>();
+        public ObservableCollection<VariableViewModel> CurrentCallStack
         {
             get
             {
@@ -72,15 +51,92 @@ namespace PgoPlugin.Debugger
 
         internal void NagivateTo()
         {
-            if (this.SelectedItem != null)
+            //if (this.SelectedItem != null)
+            //{
+            //    if (this.SelectedItem.CodeMapping != null && this.SelectedItem.CodeMapping.MemberMapping != null)
+            //        ICSharpCode.ILSpy.MainWindow.Instance.JumpToReference(this.SelectedItem.CodeMapping.MemberMapping.MemberReference);
+            //}
+            //else
+            //{
+            //    MessageBox.Show("selecteditem is null");
+            //}
+        }
+
+        internal void ViewClosed()
+        {
+            DebuggerService.DebugStarted -= new EventHandler(OnDebugStarted);
+            DebuggerService.DebugStopped -= new EventHandler(OnDebugStopped);
+            if (null != m_currentDebugger)
+                OnDebugStopped(null, EventArgs.Empty);
+
+        }
+
+        void OnDebugStarted(object sender, EventArgs args)
+        {
+            m_currentDebugger = DebuggerService.CurrentDebugger;
+            m_currentDebugger.IsProcessRunningChanged += new EventHandler(OnProcessRunningChanged);
+
+            OnProcessRunningChanged(null, EventArgs.Empty);
+        }
+
+        void OnDebugStopped(object sender, EventArgs args)
+        {
+            m_currentDebugger.IsProcessRunningChanged -= new EventHandler(OnProcessRunningChanged);
+            m_currentDebugger = null;
+            ClearPad();
+        }
+
+        void OnProcessRunningChanged(object sender, EventArgs args)
+        {
+            if (m_currentDebugger.IsProcessRunning)
+                return;
+            RefreshPad();
+        }
+
+        private void RefreshPad()
+        {
+            Process debuggedProcess = ((WindowsDebugger)m_currentDebugger).DebuggedProcess;
+            if (debuggedProcess == null || debuggedProcess.IsRunning || debuggedProcess.SelectedThread == null)
             {
-                if (this.SelectedItem.CodeMapping != null && this.SelectedItem.CodeMapping.MemberMapping != null)
-                    ICSharpCode.ILSpy.MainWindow.Instance.JumpToReference(this.SelectedItem.CodeMapping.MemberMapping.MemberReference);
+                ClearPad();
+                return;
             }
-            else
+
+            StackFrame activeFrame = null;
+            try
             {
-                MessageBox.Show("selecteditem is null");
+                activeFrame = debuggedProcess.SelectedThread.GetCallstack(1).FirstOrDefault();
+                if (activeFrame != null)
+                {
+                    _CurrentCallStack.Clear();
+                    var parameters = activeFrame.MethodInfo.GetParameters();
+                    foreach (var item in parameters.OfType<DebugParameterInfo>())
+                    {
+                        _CurrentCallStack.Add(VariableViewModel.FromParameter(item, activeFrame));
+                    }
+                    List<DebugLocalVariableInfo> vars = activeFrame.MethodInfo.GetLocalVariables();
+                    foreach (var item in vars)
+                    {
+                        _CurrentCallStack.Add(VariableViewModel.FromVar(item, activeFrame));
+                    }
+                }
             }
+            catch (System.Exception)
+            {
+                if (debuggedProcess == null || debuggedProcess.HasExited)
+                {
+                    // Process unexpectedly exited
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        private void ClearPad()
+        {
+            UiInvoke(() => this._CurrentCallStack.Clear());
         }
     }
 }
