@@ -1,0 +1,51 @@
+﻿<local:PgoLinqApiPaneBase x:Class="PgoPlugin.LinqApi.PgoLinqApiPane"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:ICSharpCode.ILSpy.Controls;assembly=ILSpy"
+             xmlns:local="clr-namespace:PgoPlugin.LinqApi"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="330">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <controls:SearchBox x:Name="searchBox" DockPanel.Dock="Top" Grid.Column="0" Grid.Row="0" Margin="1"
+						PreviewKeyDown="SearchBox_PreviewKeyDown"
+						Text="{Binding SearchTerm}" ToolTip="Search" UpdateDelay="0:0:0.1"
+						WatermarkColor="Gray" WatermarkText="Search" />
+
+            <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <Label Content="Search _for"/>
+                <ComboBox  ItemsSource="{Binding SearchKinds}" Width="100" SelectedItem="{Binding SelectedSearchKind}"/>
+            </StackPanel>
+        </Grid>
+        <ListView x:Name="lvExtentions" ItemsSource="{Binding LinqApisView}" Grid.Row="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="Auto" Header="Assembly" DisplayMemberBinding="{Binding AssemblyName}" />
+                    <GridViewColumn Header="ExtendedType" Width="Auto" DisplayMemberBinding="{Binding ExtendedType}"/>
+                    <GridViewColumn Header="FullDefinition" Width="Auto" DisplayMemberBinding="{Binding FullDefinition}"/>
+                    <GridViewColumn Width="Auto" Header="Return" DisplayMemberBinding="{Binding ReturnType}" />
+                </GridView>
+                </ListView.View>
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock FontWeight="Bold" FontSize="15"
+                         Text="{Binding Path=ExtendedType}"/>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+        </ListView>
+    </Grid>
+</local:PgoLinqApiPaneBase>

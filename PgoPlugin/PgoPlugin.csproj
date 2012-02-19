@@ -46,11 +46,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyTooltip\AssemblyTooltipProvider.cs" />
+    <Compile Include="BaseUserControl.cs" />
     <Compile Include="Bookmarks\AddBookmark.cs" />
     <Compile Include="Bookmarks\BookmarksCommand.cs" />
     <Compile Include="Bookmarks\PgoBookmarksPane.xaml.cs">
       <DependentUpon>PgoBookmarksPane.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Debugger\BasePresenter.cs" />
     <Compile Include="Debugger\VariablesCallStackCommand.cs" />
     <Compile Include="Debugger\ObservableObject.cs" />
     <Compile Include="Debugger\PgoVariablesCallStackPane.xaml.cs">
@@ -58,6 +60,12 @@
     </Compile>
     <Compile Include="Debugger\PgoCallStackPanePresenter.cs" />
     <Compile Include="Debugger\VariableViewModel.cs" />
+    <Compile Include="LinqApi\LinqApiModel.cs" />
+    <Compile Include="LinqApi\PgoLinqApiCommand.cs" />
+    <Compile Include="LinqApi\PgoLinqApiPane.xaml.cs">
+      <DependentUpon>PgoLinqApiPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LinqApi\PgoLinqApiPanePresenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReloadAssembly\ReloadAssemblyCommand.cs" />
     <Compile Include="SingletonPane.cs" />
@@ -108,6 +116,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="LinqApi\PgoLinqApiPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="callstack.png" />
@@ -120,6 +132,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="lambda.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
