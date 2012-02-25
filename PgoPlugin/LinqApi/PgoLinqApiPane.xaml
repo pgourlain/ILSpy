@@ -24,7 +24,7 @@
 
             <StackPanel Orientation="Horizontal" Grid.Column="1">
                 <Label Content="Search _for"/>
-                <ComboBox  ItemsSource="{Binding SearchKinds}" Width="100" SelectedItem="{Binding SelectedSearchKind}"/>
+                <ComboBox  ItemsSource="{Binding SearchKinds}" Width="130" SelectedItem="{Binding SelectedSearchKind}"/>
             </StackPanel>
         </Grid>
         <ListView x:Name="lvExtentions" ItemsSource="{Binding LinqApisView}" Grid.Row="1">

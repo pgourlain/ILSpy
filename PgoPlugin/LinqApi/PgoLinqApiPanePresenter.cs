@@ -8,15 +8,21 @@ using System.Collections.ObjectModel;
 using ICSharpCode.ILSpy;
 using Mono.Cecil;
 using System.Windows.Data;
+using System.Threading.Tasks;
+using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace PgoPlugin.LinqApi
 {
     public class PgoLinqApiPanePresenter : BasePresenter
     {
+        DispatcherTimer _timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.CurrentDispatcher);
+
         ListCollectionView _linqApisView;
         ObservableCollection<object> _linqApis;
         public PgoLinqApiPanePresenter()
-        {
+        {            
+            _timer.Tick += new EventHandler(_timer_Tick);
             _linqApis = new ObservableCollection<object>();
             _linqApisView = new ListCollectionView(_linqApis);
             //_linqApisView.GroupDescriptions.Add(new PropertyGroupDescription("ExtendedType"));
@@ -66,6 +72,16 @@ namespace PgoPlugin.LinqApi
             UpdateList();
         }
 
+        void _timer_Tick(object sender, EventArgs e)
+        {
+            if (_timer.IsEnabled)
+            {
+                //Trace.WriteLine("_timer_tick");
+                _timer.Stop();
+                this._linqApisView.Refresh();
+            }
+        }
+
         protected internal override void ViewClose()
         {
         }
@@ -80,6 +96,7 @@ namespace PgoPlugin.LinqApi
             {
                 yield return "ExtendedType";
                 yield return "FullDefinition";
+                yield return "AssemblyName";
             }
         }
         
@@ -119,7 +136,9 @@ namespace PgoPlugin.LinqApi
 
         private void UpdateFilteredItems()
         {
-            this._linqApisView.Refresh();
+            _timer.Stop();
+            _timer.Interval = TimeSpan.FromMilliseconds(500);
+            _timer.Start();
         }
 
         private bool OnFiltered(object value)
@@ -135,7 +154,9 @@ namespace PgoPlugin.LinqApi
                         return model.ExtendedType.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
                     case "Name":
                         return model.MethodName.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
-                    default :
+                    case "AssemblyName":
+                        return model.AssemblyName.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
+                    default:
                         return model.FullDefinition.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
                 }
             }

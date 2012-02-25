@@ -29,7 +29,7 @@ namespace PgoPlugin.LinqApi
             {
                 if (this.Method != null)
                 {
-                    _assemblyName =this.Method.DeclaringType.Module.Assembly.Name.FullName;
+                    _assemblyName =this.Method.DeclaringType.Module.Assembly.Name.Name;
                 }
                 return _assemblyName; 
             }

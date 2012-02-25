@@ -33,6 +33,16 @@ namespace PgoPlugin.LinqApi
         public PgoLinqApiPane()
         {
             InitializeComponent();
+            this.lvExtentions.MouseDoubleClick += new MouseButtonEventHandler(lvExtentions_MouseDoubleClick);
+        }
+
+        void lvExtentions_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var selectedItem = lvExtentions.SelectedItem as LinqApiModel;
+            if (selectedItem != null)
+            {
+                MainWindow.Instance.JumpToReference(selectedItem.Method);
+            }
         }
 
         protected override string WindowTile
