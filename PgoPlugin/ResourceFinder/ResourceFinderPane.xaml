@@ -1,13 +1,13 @@
-﻿<local:PgoLinqApiPaneBase x:Class="PgoPlugin.LinqApi.PgoLinqApiPane"
+﻿<local:ResourceFinderPaneBase x:Class="PgoPlugin.ResourceFinder.ResourceFinderPane"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:ICSharpCode.ILSpy.Controls;assembly=ILSpy"
-             xmlns:local="clr-namespace:PgoPlugin.LinqApi"
+             xmlns:local="clr-namespace:PgoPlugin.ResourceFinder"
              xmlns:util="clr-namespace:PgoPlugin.Util"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="330">
+             d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,29 +19,27 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <controls:SearchBox x:Name="searchBox" DockPanel.Dock="Top" Grid.Column="0" Grid.Row="0" Margin="1"
-						PreviewKeyDown="SearchBox_PreviewKeyDown"
-						Text="{Binding SearchTerm}" ToolTip="Search" UpdateDelay="0:0:0.5"
-						WatermarkColor="Gray" WatermarkText="Search" />
+                        PreviewKeyDown="SearchBox_PreviewKeyDown"
+                        Text="{Binding SearchTerm}" ToolTip="Search" UpdateDelay="0:0:0.5"
+                        WatermarkColor="Gray" WatermarkText="Search" />
 
-            <StackPanel Orientation="Horizontal" Grid.Column="1">
+            <!--<StackPanel Orientation="Horizontal" Grid.Column="1">
                 <Label Content="Search _for"/>
                 <ComboBox  ItemsSource="{Binding SearchKinds}" Width="130" SelectedItem="{Binding SelectedSearchKind}"/>
-            </StackPanel>
+            </StackPanel>-->
         </Grid>
-        <ListView x:Name="lvExtentions" ItemsSource="{Binding LinqApisView}" Grid.Row="1"
+        <ListView x:Name="lvExtentions" ItemsSource="{Binding ResourcesView}" Grid.Row="1"
                   util:GridViewSort.AutoSort="True">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="Auto" Header="Assembly" DisplayMemberBinding="{Binding AssemblyName}" 
                                     util:GridViewSort.PropertyName="AssemblyName"/>
-                    <GridViewColumn Header="ExtendedType" Width="Auto" DisplayMemberBinding="{Binding ExtendedType}"
-                                    util:GridViewSort.PropertyName="ExtendedType"/>
-                    <GridViewColumn Header="FullDefinition" Width="Auto" DisplayMemberBinding="{Binding FullDefinition}"
-                                    util:GridViewSort.PropertyName="FullDefinition"/>
-                    <GridViewColumn Width="Auto" Header="Return" DisplayMemberBinding="{Binding ReturnType}" 
-                                    util:GridViewSort.PropertyName="ReturnType"/>
+                    <GridViewColumn Header="Name" Width="Auto" DisplayMemberBinding="{Binding ResourceName}"
+                                    util:GridViewSort.PropertyName="ResourceName"/>
+                    <GridViewColumn Header="Type" Width="Auto" DisplayMemberBinding="{Binding ResourceType}"
+                                    util:GridViewSort.PropertyName="ResourceType"/>
                 </GridView>
-                </ListView.View>
+            </ListView.View>
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
@@ -54,4 +52,4 @@
             </ListView.GroupStyle>
         </ListView>
     </Grid>
-</local:PgoLinqApiPaneBase>
+</local:ResourceFinderPaneBase>

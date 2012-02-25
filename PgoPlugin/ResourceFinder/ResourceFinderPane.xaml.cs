@@ -13,24 +13,24 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ICSharpCode.ILSpy;
 
-namespace PgoPlugin.LinqApi
+namespace PgoPlugin.ResourceFinder
 {
-    /* PgoLinqApiPaneBase est utilisé dans le Xaml*/
 
-    public class PgoLinqApiPaneBase : BaseUserControl<PgoLinqApiPanePresenter>
+    /* ResourceFinderPane est utilisé dans le Xaml*/
+
+    public class ResourceFinderPaneBase : BaseUserControl<ResourceFinderPanePresenter>
     {
-        public PgoLinqApiPaneBase()
+        public ResourceFinderPaneBase()
         {
 
         }
     }
-
     /// <summary>
-    /// Interaction logic for PgoLinqApiPane.xaml
+    /// Interaction logic for ResourceFinderPane.xaml
     /// </summary>
-    public partial class PgoLinqApiPane : PgoLinqApiPaneBase
+    public partial class ResourceFinderPane : ResourceFinderPaneBase
     {
-        public PgoLinqApiPane()
+        public ResourceFinderPane()
         {
             InitializeComponent();
             this.lvExtentions.MouseDoubleClick += new MouseButtonEventHandler(lvExtentions_MouseDoubleClick);
@@ -38,14 +38,13 @@ namespace PgoPlugin.LinqApi
 
         void lvExtentions_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var selectedItem = lvExtentions.SelectedItem as LinqApiModel;
+            var selectedItem = lvExtentions.SelectedItem as ResourceItem;
             if (selectedItem != null)
             {
-                MainWindow.Instance.JumpToReference(selectedItem.Method);
+
+                MainWindow.Instance.JumpToReference(selectedItem.Resource);
             }
         }
-
-        protected override string WindowTile { get { return "Linq Apis"; } }
 
         void SearchBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -57,12 +56,19 @@ namespace PgoPlugin.LinqApi
             }
         }
 
+        protected override string WindowTile
+        {
+            get
+            {
+                return "Resource finder";
+            }
+        }
+
         protected override void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             this.searchBox.Focus();
             base.UserControl_Loaded(sender, e);
 
         }
-
     }
 }

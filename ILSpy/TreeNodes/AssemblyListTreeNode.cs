@@ -261,5 +261,30 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			return typeNode.Children.OfType<EventTreeNode>().FirstOrDefault(m => m.EventDefinition == def && !m.IsHidden);
 		}
 		#endregion
-	}
+
+        public ILSpyTreeNode FindResourceNode(Resource resource)
+        {
+            if (resource == null)
+                return null;
+            foreach (AssemblyTreeNode node in this.Children)
+            {
+                if (node.LoadedAssembly.IsLoaded)
+                {
+                    node.EnsureLazyChildren();
+                    //var founded = node.LoadedAssembly.AssemblyDefinition.MainModule.Resources.Where(x => x == resource).FirstOrDefault();
+                    foreach (var item in node.Children.OfType<ResourceListTreeNode>())
+                    {
+                        var founded = item.Children.OfType<ResourceTreeNode>().Where(x => x.Resource == resource).FirstOrDefault();
+                        if (founded != null)
+                            return founded;
+
+                        var foundedResEntry = item.Children.OfType<ResourceEntryNode>().Where(x => x.Text == resource.Name).FirstOrDefault();
+                        if (foundedResEntry != null)
+                            return foundedResEntry;
+                    }
+                }
+            }
+            return null;
+        }
+    }
 }

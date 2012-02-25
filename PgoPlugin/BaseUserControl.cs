@@ -18,7 +18,7 @@ namespace PgoPlugin
 
         public BaseUserControl()
         {
-            this.Loaded += new System.Windows.RoutedEventHandler(BaseUserControl_Loaded);
+            this.Loaded += new System.Windows.RoutedEventHandler(UserControl_Loaded);
         }
 
         public void Show()
@@ -41,7 +41,7 @@ namespace PgoPlugin
         }
 
 
-        void BaseUserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        protected virtual void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
             var presenter = new TPresenter();
             _presenter = presenter;

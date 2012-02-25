@@ -16,13 +16,10 @@ namespace PgoPlugin.LinqApi
 {
     public class PgoLinqApiPanePresenter : BasePresenter
     {
-        DispatcherTimer _timer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.CurrentDispatcher);
-
         ListCollectionView _linqApisView;
         ObservableCollection<object> _linqApis;
         public PgoLinqApiPanePresenter()
         {            
-            _timer.Tick += new EventHandler(_timer_Tick);
             _linqApis = new ObservableCollection<object>();
             _linqApisView = new ListCollectionView(_linqApis);
             //_linqApisView.GroupDescriptions.Add(new PropertyGroupDescription("ExtendedType"));
@@ -70,16 +67,6 @@ namespace PgoPlugin.LinqApi
         void Instance_CurrentAssemblyListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             UpdateList();
-        }
-
-        void _timer_Tick(object sender, EventArgs e)
-        {
-            if (_timer.IsEnabled)
-            {
-                //Trace.WriteLine("_timer_tick");
-                _timer.Stop();
-                this._linqApisView.Refresh();
-            }
         }
 
         protected internal override void ViewClose()
@@ -136,9 +123,7 @@ namespace PgoPlugin.LinqApi
 
         private void UpdateFilteredItems()
         {
-            _timer.Stop();
-            _timer.Interval = TimeSpan.FromMilliseconds(500);
-            _timer.Start();
+            this._linqApisView.Refresh();
         }
 
         private bool OnFiltered(object value)

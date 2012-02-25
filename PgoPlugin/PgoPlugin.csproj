@@ -70,8 +70,15 @@
     <Compile Include="LinqApi\PgoLinqApiPanePresenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReloadAssembly\ReloadAssemblyCommand.cs" />
+    <Compile Include="ResourceFinder\ResourceFinderCommand.cs" />
+    <Compile Include="ResourceFinder\ResourceFinderPane.xaml.cs">
+      <DependentUpon>ResourceFinderPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ResourceFinder\ResourceFinderPanePresenter.cs" />
+    <Compile Include="ResourceFinder\ResourceItem.cs" />
     <Compile Include="SingletonPane.cs" />
     <Compile Include="SortAssembly\SortAssembliesCommand.cs" />
+    <Compile Include="Util\GridViewSort.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Debugger\Debugger.Core\Debugger.Core.csproj">
@@ -122,6 +129,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ResourceFinder\ResourceFinderPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="callstack.png" />
@@ -137,6 +148,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="lambda.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

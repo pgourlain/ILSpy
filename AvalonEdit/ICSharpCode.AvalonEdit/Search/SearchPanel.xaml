@@ -29,10 +29,10 @@
 								</search:DropDownButton.DropDownContent>
 							</search:DropDownButton>
 							<Button Margin="3" Height="24" Width="24" Command="search:SearchCommands.FindPrevious" ToolTip="{Binding Localization.FindPreviousText, RelativeSource={RelativeSource TemplatedParent}}">
-								<Image Width="16" Height="16" Stretch="Fill" Source="prev.png" />
+								<Image Width="12" Height="12" Stretch="Fill" Source="prev.png" />
 							</Button>
 							<Button Margin="3" Height="24" Width="24" Command="search:SearchCommands.FindNext" ToolTip="{Binding Localization.FindNextText, RelativeSource={RelativeSource TemplatedParent}}">
-								<Image Width="16" Height="16" Stretch="Fill" Source="next.png" />
+								<Image Width="12" Height="12" Stretch="Fill" Source="next.png" />
 							</Button>
 							<Button Height="16" Width="16" HorizontalAlignment="Right" VerticalAlignment="Top" Command="search:SearchCommands.CloseSearchPanel"
 							        VerticalContentAlignment="Center" HorizontalContentAlignment="Center">

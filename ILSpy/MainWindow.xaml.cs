@@ -520,7 +520,11 @@ namespace ICSharpCode.ILSpy
 				return assemblyListTreeNode.FindEventNode(((EventReference)reference).Resolve());
 			} else if (reference is AssemblyDefinition) {
 				return assemblyListTreeNode.FindAssemblyNode((AssemblyDefinition)reference);
-			} else {
+			} else if(reference is Resource) {
+                return assemblyListTreeNode.FindResourceNode((Resource)reference);
+            }
+            else
+            {
 				return null;
 			}
 		}
