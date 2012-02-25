@@ -27,4 +27,5 @@ Pierrick Gourlain add somes features in this fork :
 - plugin to sort assemblies in treeview
 - plugin to show tooltip on assembly (version and location)
 - plugin to show local variables while debugging
+- plugin to show/search linq apis (extensions)
 
