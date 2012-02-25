@@ -242,5 +242,8 @@
   <ItemGroup>
     <Resource Include="Images\application-x-executable.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Break.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
