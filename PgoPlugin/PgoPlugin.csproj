@@ -55,6 +55,11 @@
       <DependentUpon>PgoBookmarksPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Debugger\BasePresenter.cs" />
+    <Compile Include="Debugger\ModulesDebugCommand.cs" />
+    <Compile Include="Debugger\PgoModulesPane.xaml.cs">
+      <DependentUpon>PgoModulesPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Debugger\PgoModulesPanePresenter.cs" />
     <Compile Include="Debugger\VariablesCallStackCommand.cs" />
     <Compile Include="Debugger\ObservableObject.cs" />
     <Compile Include="Debugger\PgoVariablesCallStackPane.xaml.cs">
@@ -118,6 +123,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Bookmarks\PgoBookmarksPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Debugger\PgoModulesPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

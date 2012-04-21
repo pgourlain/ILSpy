@@ -10,26 +10,6 @@ namespace PgoPlugin.Bookmarks
     [ExportContextMenuEntry(Header = "_Add Bookmark", Icon="addbookmark.png")]
 	public class AddBookmark : IContextMenuEntry
     {
-        #region IContextMenuEntry Members
-
-        public bool IsVisible(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
-        {
-            return false;
-        }
-
-        public bool IsEnabled(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
-        {
-            return false;
-        }
-
-        public void Execute(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
-        {
-            foreach (var item in selectedNodes)
-            {
-                var path = Path(item);
-                System.Windows.MessageBox.Show(path);
-            }
-        }
 
         private string Path(ICSharpCode.TreeView.SharpTreeNode item)
         {
@@ -43,6 +23,28 @@ namespace PgoPlugin.Bookmarks
                 item = item.Parent;
             }
             return sb.ToString();
+        }
+
+        #region IContextMenuEntry Members
+
+        public bool IsVisible(TextViewContext context)
+        {
+            return false;
+        }
+
+        public bool IsEnabled(TextViewContext context)
+        {
+            return false;
+        }
+
+        public void Execute(TextViewContext context)
+        {
+            foreach (var item in context.SelectedTreeNodes)
+            {
+                var path = Path(item);
+                System.Windows.MessageBox.Show(path);
+            }
+
         }
 
         #endregion

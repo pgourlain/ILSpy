@@ -10,25 +10,45 @@ namespace PgoPlugin.ReloadAssembly
     [ExportContextMenuEntry(Header = "_Reload", Icon = "refresh.png")]
     public class ReloadAssemblyCommand : IContextMenuEntry
     {
-        #region IContextMenuEntry Members
-
-        public bool IsVisible(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
+        class MyComparer : IComparer<LoadedAssembly>
         {
-            return selectedNodes.All(x => x is AssemblyTreeNode);
+            List<string> _currentSort;
+            public MyComparer(string[] currentSort)
+            {
+                _currentSort = new List<string>(currentSort);
+            }
+
+            #region IComparer<LoadedAssembly> Members
+
+            public int Compare(LoadedAssembly x, LoadedAssembly y)
+            {
+                var ix = this._currentSort.IndexOf(x.FileName);
+                var iy = this._currentSort.IndexOf(y.FileName);
+                return ix.CompareTo(iy);
+            }
+
+            #endregion
         }
 
-        public bool IsEnabled(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
+
+        #region IContextMenuEntry Members
+
+        public bool IsVisible(TextViewContext context)
         {
-            //return selectedNodes.All(x => x is AssemblyTreeNode);
+            return context.SelectedTreeNodes.All(x => x is AssemblyTreeNode);
+        }
+
+        public bool IsEnabled(TextViewContext context)
+        {
             return true;
         }
 
-        public void Execute(ICSharpCode.TreeView.SharpTreeNode[] selectedNodes)
+        public void Execute(TextViewContext context)
         {
             var mainWindow = MainWindow.Instance;
             var currentSort = mainWindow.CurrentAssemblyList.GetAssemblies().Select(x => x.FileName).ToArray();
 
-            var assemblies = selectedNodes.OfType<AssemblyTreeNode>().Select(x => x.LoadedAssembly);            
+            var assemblies = context.SelectedTreeNodes.OfType<AssemblyTreeNode>().Select(x => x.LoadedAssembly);
             foreach (var ass in assemblies)
             {
                 var fileName = ass.FileName;
@@ -55,26 +75,5 @@ namespace PgoPlugin.ReloadAssembly
         }
 
         #endregion
-
-        class MyComparer : IComparer<LoadedAssembly>
-        {
-            List<string> _currentSort;
-            public MyComparer(string[] currentSort)
-            {
-                _currentSort = new List<string>(currentSort);
-            }
-
-            #region IComparer<LoadedAssembly> Members
-
-            public int Compare(LoadedAssembly x, LoadedAssembly y)
-            {
-                var ix = this._currentSort.IndexOf(x.FileName);
-                var iy = this._currentSort.IndexOf(y.FileName);
-                return ix.CompareTo(iy);
-            }
-
-            #endregion
-        }
-
     }
 }
