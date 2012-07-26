@@ -160,7 +160,7 @@ namespace ICSharpCode.Decompiler.Ast
 				RunTransformations();
 			
 			astCompileUnit.AcceptVisitor(new InsertParenthesesVisitor { InsertParenthesesForReadability = true });
-			var outputFormatter = new TextOutputFormatter(output);
+			var outputFormatter = new TextOutputFormatter(output) { FoldBraces = context.Settings.FoldBraces };
 			var formattingPolicy = context.Settings.CSharpFormattingOptions;
 			astCompileUnit.AcceptVisitor(new CSharpOutputVisitor(outputFormatter, formattingPolicy));
 		}
@@ -1348,6 +1348,7 @@ namespace ICSharpCode.Decompiler.Ast
 		
 		static void ConvertCustomAttributes(AstNode attributedNode, ICustomAttributeProvider customAttributeProvider, string attributeTarget = null)
 		{
+			EntityDeclaration entityDecl = attributedNode as EntityDeclaration;
 			if (customAttributeProvider.HasCustomAttributes) {
 				var attributes = new List<ICSharpCode.NRefactory.CSharp.Attribute>();
 				foreach (var customAttribute in customAttributeProvider.CustomAttributes.OrderBy(a => a.AttributeType.FullName)) {
@@ -1359,11 +1360,14 @@ namespace ICSharpCode.Decompiler.Ast
 						// don't show the ParamArrayAttribute (it's converted to the 'params' modifier)
 						continue;
 					}
-					if (customAttribute.AttributeType.Name == "DebuggerStepThroughAttribute" && customAttribute.AttributeType.Namespace == "System.Diagnostics") {
-						// don't show the attribute if the method is async
-						EntityDeclaration entityDecl = attributedNode as EntityDeclaration;
-						if (entityDecl != null && entityDecl.HasModifier(Modifiers.Async))
+					// if the method is async, remove [DebuggerStepThrough] and [Async
+					if (entityDecl != null && entityDecl.HasModifier(Modifiers.Async)) {
+						if (customAttribute.AttributeType.Name == "DebuggerStepThroughAttribute" && customAttribute.AttributeType.Namespace == "System.Diagnostics") {
 							continue;
+						}
+						if (customAttribute.AttributeType.Name == "AsyncStateMachineAttribute" && customAttribute.AttributeType.Namespace == "System.Runtime.CompilerServices") {
+							continue;
+						}
 					}
 					
 					var attribute = new ICSharpCode.NRefactory.CSharp.Attribute();
