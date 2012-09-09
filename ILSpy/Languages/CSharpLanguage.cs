@@ -212,10 +212,10 @@ namespace ICSharpCode.ILSpy
 		{
 			astBuilder.RunTransformations(transformAbortCondition);
 			if (additionalTransform != null) {
-				additionalTransform.Run(astBuilder.CompilationUnit);
+				additionalTransform.Run(astBuilder.SyntaxTree);
 			}
 			if (options.DecompilerSettings.ShowXmlDocumentation) {
-				AddXmlDocTransform.Run(astBuilder.CompilationUnit);
+				AddXmlDocTransform.Run(astBuilder.SyntaxTree);
 			}
 			astBuilder.GenerateCode(output);
 		}
@@ -482,8 +482,8 @@ namespace ICSharpCode.ILSpy
 								Stream entryStream = (Stream)pair.Value;
 								entryStream.Position = 0;
 								if (fileName.EndsWith(".baml", StringComparison.OrdinalIgnoreCase)) {
-									MemoryStream ms = new MemoryStream();
-									entryStream.CopyTo(ms);
+//									MemoryStream ms = new MemoryStream();
+//									entryStream.CopyTo(ms);
 									// TODO implement extension point
 //									var decompiler = Baml.BamlResourceEntryNode.CreateBamlDecompilerInAppDomain(ref bamlDecompilerAppDomain, assembly.FileName);
 //									string xaml = null;
@@ -650,7 +650,7 @@ namespace ICSharpCode.ILSpy
 				else
 					b.AddField(fd);
 				b.RunTransformations();
-				foreach (var attribute in b.CompilationUnit.Descendants.OfType<AttributeSection>())
+				foreach (var attribute in b.SyntaxTree.Descendants.OfType<AttributeSection>())
 					attribute.Remove();
 
 				StringWriter w = new StringWriter();
