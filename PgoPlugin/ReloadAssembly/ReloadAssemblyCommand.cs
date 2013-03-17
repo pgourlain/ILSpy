@@ -35,7 +35,11 @@ namespace PgoPlugin.ReloadAssembly
 
         public bool IsVisible(TextViewContext context)
         {
-            return context.SelectedTreeNodes.All(x => x is AssemblyTreeNode);
+            if (context!= null && context.SelectedTreeNodes != null)
+            {
+                return context.SelectedTreeNodes.All(x => x is AssemblyTreeNode);
+            }
+            return false;
         }
 
         public bool IsEnabled(TextViewContext context)
