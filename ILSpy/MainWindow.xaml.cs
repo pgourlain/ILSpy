@@ -276,9 +276,9 @@ namespace ICSharpCode.ILSpy
 					}
 				} else {
 					foreach (LoadedAssembly asm in commandLineLoadedAssemblies) {
-						AssemblyDefinition def = asm.AssemblyDefinition;
+						ModuleDefinition def = asm.ModuleDefinition;
 						if (def != null) {
-							MemberReference mr = XmlDocKeyProvider.FindMemberByKey(def.MainModule, args.NavigateTo);
+							MemberReference mr = XmlDocKeyProvider.FindMemberByKey(def, args.NavigateTo);
 							if (mr != null) {
 								found = true;
 								JumpToReference(mr);
@@ -295,7 +295,7 @@ namespace ICSharpCode.ILSpy
 			} else if (commandLineLoadedAssemblies.Count == 1) {
 				// NavigateTo == null and an assembly was given on the command-line:
 				// Select the newly loaded assembly
-				JumpToReference(commandLineLoadedAssemblies[0].AssemblyDefinition);
+				JumpToReference(commandLineLoadedAssemblies[0].ModuleDefinition);
 			}
 			commandLineLoadedAssemblies.Clear(); // clear references once we don't need them anymore
 		}
@@ -551,10 +551,11 @@ namespace ICSharpCode.ILSpy
 				return assemblyListTreeNode.FindEventNode(((EventReference)reference).Resolve());
 			} else if (reference is AssemblyDefinition) {
 				return assemblyListTreeNode.FindAssemblyNode((AssemblyDefinition)reference);
+			} else if (reference is ModuleDefinition) {
+				return assemblyListTreeNode.FindAssemblyNode((ModuleDefinition)reference);
 			} else if(reference is Resource) {
                 return assemblyListTreeNode.FindResourceNode((Resource)reference);
-            }
-            else
+            } else
             {
 				return null;
 			}
