@@ -1526,7 +1526,11 @@ namespace ICSharpCode.NRefactory.CSharp
 				OptionalComma();
 				NewLine();
 			} else {
+				bool first = true;
 				foreach (var member in typeDeclaration.Members) {
+					if (!first)
+						NewLine();
+					first = false;
 					member.AcceptVisitor(this);
 				}
 			}
@@ -2319,8 +2323,12 @@ namespace ICSharpCode.NRefactory.CSharp
 		
 		public void VisitSyntaxTree(SyntaxTree syntaxTree)
 		{
+			Type type = null;
 			// don't do node tracking as we visit all children directly
 			foreach (AstNode node in syntaxTree.Children) {
+				if (type != null && type != node.GetType())
+					NewLine();
+				type = node.GetType();
 				node.AcceptVisitor(this);
 			}
 		}
