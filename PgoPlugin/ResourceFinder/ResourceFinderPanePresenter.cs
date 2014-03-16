@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using PgoPlugin.Debugger;
 using System.Windows.Data;
 using System.Collections.ObjectModel;
-using System.Windows.Threading;
 using ICSharpCode.ILSpy;
+using PgoPlugin.UIHelper;
 
 namespace PgoPlugin.ResourceFinder
 {

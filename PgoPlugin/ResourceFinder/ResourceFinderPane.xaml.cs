@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ICSharpCode.ILSpy;
+using PgoPlugin.UIHelper;
 
 namespace PgoPlugin.ResourceFinder
 {

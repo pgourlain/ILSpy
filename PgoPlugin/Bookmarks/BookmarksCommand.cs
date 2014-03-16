@@ -27,7 +27,7 @@ namespace PgoPlugin.Bookmarks
 
         public override bool CanExecute(object parameter)
         {
-            return false;
+            return true;
         }
     }
 }

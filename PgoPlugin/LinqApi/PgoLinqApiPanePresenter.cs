@@ -11,19 +11,19 @@ using System.Windows.Data;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Diagnostics;
+using PgoPlugin.UIHelper;
 
 namespace PgoPlugin.LinqApi
 {
-    public class PgoLinqApiPanePresenter : BasePresenter
+    public class PgoLinqApiPanePresenter : FilteredPresenter<LinqApiModel>
     {
-        ListCollectionView _linqApisView;
-        ObservableCollection<object> _linqApis;
+        //ListCollectionView _linqApisView;
+        //ObservableCollection<object> _linqApis;
         public PgoLinqApiPanePresenter()
         {            
-            _linqApis = new ObservableCollection<object>();
-            _linqApisView = new ListCollectionView(_linqApis);
-            //_linqApisView.GroupDescriptions.Add(new PropertyGroupDescription("ExtendedType"));
-            _linqApisView.Filter = OnFiltered;
+            //_linqApis = new ObservableCollection<object>();
+            //_linqApisView = new ListCollectionView(_linqApis);
+            //_linqApisView.Filter = OnFiltered;
             this._selectedSearchKind = "ExtendedType";
         }
 
@@ -73,9 +73,7 @@ namespace PgoPlugin.LinqApi
         {
         }
 
-        public ObservableCollection<object> LinqApis { get { return _linqApis; } }
-
-        public ListCollectionView LinqApisView { get { return _linqApisView; } }
+        public ObservableCollection<LinqApiModel> LinqApis { get { return this.Models; } }
 
         public IEnumerable<string> SearchKinds
         {
@@ -85,24 +83,7 @@ namespace PgoPlugin.LinqApi
                 yield return "FullDefinition";
                 yield return "AssemblyName";
             }
-        }
-        
-        string _searchTerm;
-        public string SearchTerm
-        {
-            get
-            {
-                return _searchTerm;
-            }
-            set
-            {
-                if (_searchTerm != value)
-                {
-                    _searchTerm = value;
-                    UpdateFilteredItems();
-                }
-            }
-        }
+        }       
 
         string _selectedSearchKind;
         public string SelectedSearchKind
@@ -121,28 +102,26 @@ namespace PgoPlugin.LinqApi
             }
         }
 
-        private void UpdateFilteredItems()
+        protected override bool OnFiltered(object value)
         {
-            this._linqApisView.Refresh();
-        }
-
-        private bool OnFiltered(object value)
-        {
-            if (string.IsNullOrWhiteSpace(this._searchTerm))
+            if (String.IsNullOrWhiteSpace(this.SearchTerm))
                 return true;
-            var model = value as LinqApiModel;
-            if (model != null)
+            if (true)
             {
-                switch(this.SelectedSearchKind)
+                var model = value as LinqApiModel;
+                if (model != null)
                 {
-                    case "ExtendedType":
-                        return model.ExtendedType.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
-                    case "Name":
-                        return model.MethodName.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
-                    case "AssemblyName":
-                        return model.AssemblyName.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
-                    default:
-                        return model.FullDefinition.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
+                    switch (this.SelectedSearchKind)
+                    {
+                        case "ExtendedType":
+                            return model.ExtendedType.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
+                        case "Name":
+                            return model.MethodName.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
+                        case "AssemblyName":
+                            return model.AssemblyName.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
+                        default:
+                            return model.FullDefinition.IndexOf(this.SearchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
+                    }
                 }
             }
             return false;

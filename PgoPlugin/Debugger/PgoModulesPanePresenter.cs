@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Threading;
 using ICSharpCode.ILSpy.Debugger.Services;
+using PgoPlugin.UIHelper;
 
 namespace PgoPlugin.Debugger
 {

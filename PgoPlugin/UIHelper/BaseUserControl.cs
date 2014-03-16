@@ -5,7 +5,7 @@ using System.Text;
 using PgoPlugin.Debugger;
 using ICSharpCode.ILSpy;
 
-namespace PgoPlugin
+namespace PgoPlugin.UIHelper
 {
 
     public enum PaneLocationEnumeration { Top, Center, Bottom };
@@ -13,11 +13,13 @@ namespace PgoPlugin
         where TPresenter : BasePresenter, new()
 
     {
-        BasePresenter _presenter;
-        protected BasePresenter Presenter { get { return _presenter; } }
+        TPresenter _presenter;
+        protected TPresenter Presenter { get { return _presenter; } }
 
         public BaseUserControl()
         {
+            var presenter = new TPresenter();
+            _presenter = presenter;
             this.Loaded += new System.Windows.RoutedEventHandler(UserControl_Loaded);
         }
 
@@ -43,10 +45,8 @@ namespace PgoPlugin
 
         protected virtual void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            var presenter = new TPresenter();
-            _presenter = presenter;
-            this.DataContext = presenter;
-            presenter.ViewReady();
+            this.DataContext = _presenter;
+            _presenter.ViewReady();
         }
 
         #region IPane Members

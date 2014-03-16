@@ -6,7 +6,7 @@ using Mono.Cecil;
 
 namespace PgoPlugin.LinqApi
 {
-    class LinqApiModel
+    public class LinqApiModel
     {
         public MethodDefinition Method { get; set; }
         public string ReturnType { get; set; }

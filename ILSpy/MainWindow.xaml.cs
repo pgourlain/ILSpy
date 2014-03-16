@@ -575,6 +575,16 @@ namespace ICSharpCode.ILSpy
 				}
 			}
 		}
+
+        public void JumpToPath(string[] path)
+        {
+            SharpTreeNode node = FindNodeByPath(path, true);
+            if (node != null)
+            {
+                SelectNode(node);
+            }
+        }
+
 		#endregion
 		
 		#region Open/Refresh

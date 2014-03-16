@@ -52,20 +52,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyTooltip\AssemblyTooltipProvider.cs" />
-    <Compile Include="BaseUserControl.cs" />
+    <Compile Include="Bookmarks\BookmarkModel.cs" />
+    <Compile Include="Bookmarks\RelayCommand.cs" />
+    <Compile Include="UIHelper\BaseUserControl.cs" />
     <Compile Include="Bookmarks\AddBookmark.cs" />
+    <Compile Include="Bookmarks\BookmarkPresenter.cs" />
     <Compile Include="Bookmarks\BookmarksCommand.cs" />
     <Compile Include="Bookmarks\PgoBookmarksPane.xaml.cs">
       <DependentUpon>PgoBookmarksPane.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Debugger\BasePresenter.cs" />
+    <Compile Include="UIHelper\BasePresenter.cs" />
     <Compile Include="Debugger\ModulesDebugCommand.cs" />
     <Compile Include="Debugger\PgoModulesPane.xaml.cs">
       <DependentUpon>PgoModulesPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Debugger\PgoModulesPanePresenter.cs" />
     <Compile Include="Debugger\VariablesCallStackCommand.cs" />
-    <Compile Include="Debugger\ObservableObject.cs" />
+    <Compile Include="UIHelper\ObservableObject.cs" />
     <Compile Include="Debugger\PgoVariablesCallStackPane.xaml.cs">
       <DependentUpon>PgoVariablesCallStackPane.xaml</DependentUpon>
     </Compile>
@@ -87,9 +90,14 @@
     <Compile Include="ResourceFinder\ResourceItem.cs" />
     <Compile Include="SingletonPane.cs" />
     <Compile Include="SortAssembly\SortAssembliesCommand.cs" />
+    <Compile Include="UIHelper\FilteredPresenter.cs" />
     <Compile Include="Util\GridViewSort.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Debugger\ILSpy.Debugger\ILSpy.Debugger.csproj">
+      <Project>{6d3d0f0d-348d-456a-a6ed-e9bd5efabb6a}</Project>
+      <Name>ILSpy.Debugger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
       <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
       <Name>ICSharpCode.Decompiler</Name>
@@ -156,6 +164,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="resources.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="delete.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

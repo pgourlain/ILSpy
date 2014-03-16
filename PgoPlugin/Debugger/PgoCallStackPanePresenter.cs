@@ -10,6 +10,7 @@ using System.Windows;
 using ICSharpCode.ILSpy.Debugger.Services;
 using Debugger;
 using Debugger.MetaData;
+using PgoPlugin.UIHelper;
 
 namespace PgoPlugin.Debugger
 {

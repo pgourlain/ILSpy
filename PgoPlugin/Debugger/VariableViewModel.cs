@@ -5,6 +5,7 @@ using System.Text;
 using Debugger;
 using ICSharpCode.Decompiler;
 using Debugger.MetaData;
+using PgoPlugin.UIHelper;
 //using ICSharpCode.ILSpy.Debugger;
 
 namespace PgoPlugin.Debugger
