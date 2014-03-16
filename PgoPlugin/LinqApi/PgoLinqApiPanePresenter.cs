@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Diagnostics;
 using PgoPlugin.UIHelper;
+using System.Windows;
 
 namespace PgoPlugin.LinqApi
 {
@@ -36,7 +37,7 @@ namespace PgoPlugin.LinqApi
             } 
         }
 
-        private void UpdateList()
+        private IEnumerable<LinqApiModel> GetLinqApis()
         {
             var assemblies = MainWindow.Instance.CurrentAssemblyList.GetAssemblies();
             var definitions = assemblies.Where(x => x.IsLoaded).Where(x => x.AssemblyDefinition != null).Select(x => x.AssemblyDefinition);
@@ -49,19 +50,29 @@ namespace PgoPlugin.LinqApi
                           {
                               Method = m,
                               ReturnType = m.ReturnType.FormatTypeName(),
-                              MethodName = m.Name + 
+                              MethodName = m.Name +
                                 (m.HasGenericParameters ? "<" + m.GenericParameters.Select(t => t.Name).CommaSeparated() + ">" : ""),
                               Parameters = "(" + (isExtension ? "this " : "") +
-                                    m.Parameters.Select(p => p.ParameterType.FormatTypeName() + " " + p.Name) .CommaSeparated() 
+                                    m.Parameters.Select(p => p.ParameterType.FormatTypeName() + " " + p.Name).CommaSeparated()
                                     + ")",
                               ExtendedType = isExtension ? m.Parameters.Select(p => p.ParameterType.FormatTypeName()).First() : ""
                           };
+            return methods;
+        }
 
-            this.LinqApis.Clear();
-            foreach (var item in methods)
+        private void UpdateList()
+        {
+            Loading = Visibility.Visible;
+            Task.Factory.StartNew<IEnumerable<LinqApiModel>>(() => GetLinqApis()).ContinueWith(t =>
             {
-                this.LinqApis.Add(item);
-            }
+                Loading = Visibility.Hidden;
+                this.LinqApis.Clear();
+                foreach (var item in t.Result)
+                {
+                    this.LinqApis.Add(item);
+                }
+
+            }, TaskScheduler.FromCurrentSynchronizationContext()); 
         }
 
         void Instance_CurrentAssemblyListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -101,6 +112,18 @@ namespace PgoPlugin.LinqApi
                 }
             }
         }
+
+        Visibility _loading;
+        public Visibility Loading
+        {
+            get { return _loading; }
+            set
+            {
+                _loading = value;
+                DoNotifyPropertyChanged("Loading");
+            }
+        }
+
 
         protected override bool OnFiltered(object value)
         {
