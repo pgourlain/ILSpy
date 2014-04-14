@@ -54,6 +54,14 @@
     <Compile Include="AssemblyTooltip\AssemblyTooltipProvider.cs" />
     <Compile Include="Bookmarks\BookmarkModel.cs" />
     <Compile Include="Bookmarks\RelayCommand.cs" />
+    <Compile Include="CallStackParser\CallStackParserCommand.cs" />
+    <Compile Include="CallStackParser\CallStackParserModel.cs" />
+    <Compile Include="CallStackParser\CallStackParserPresenter.cs" />
+    <Compile Include="CallStackParser\CallStackParserView.xaml.cs">
+      <DependentUpon>CallStackParserView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CallStackParser\ExceptionStackTraceParser.cs" />
+    <Compile Include="Debugger\Dumper.cs" />
     <Compile Include="Debugger\SaveBreakPointsCommand.cs" />
     <Compile Include="UIHelper\BaseUserControl.cs" />
     <Compile Include="Bookmarks\AddBookmark.cs" />
@@ -135,6 +143,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="CallStackParser\CallStackParserView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Debugger\PgoModulesPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -178,6 +190,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="LoadBreakpoints.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="callstackparser.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

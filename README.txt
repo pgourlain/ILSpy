@@ -25,9 +25,10 @@ Pierrick Gourlain has added some features in this fork :
 	- tooltip extension
 - add search on type and member
 - plugin to sort assemblies in treeview
-- plugin to show tooltip on assembly (version and location)
+- plugin to show tooltip on Assembly node and Type node (version and location of current Assembly)
 - plugin to show local variables while debugging
 - plugin to show/search linq apis (extensions)
 - plugin to search resources through assemblies
 - plugin to manage bookmarks
+- plugin to parse exception stack trace
 

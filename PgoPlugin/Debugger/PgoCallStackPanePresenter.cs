@@ -39,7 +39,15 @@ namespace PgoPlugin.Debugger
             ICSharpCode.ILSpy.Debugger.Services.DebuggerService.CurrentDebugger.IsProcessRunningChanged += new EventHandler(OnProcessRunningChanged);
         }
 
-        public VariableViewModel SelectedItem { get; set; }
+        VariableViewModel _SelectedItem;
+        public VariableViewModel SelectedItem            
+        {
+            get {return _SelectedItem;}
+            set {
+                _SelectedItem = value;
+                DoNotifyPropertyChanged("SelectedItem");
+            } 
+        }
 
         ObservableCollection<VariableViewModel> _CurrentCallStack = new ObservableCollection<VariableViewModel>();
         public ObservableCollection<VariableViewModel> CurrentCallStack
@@ -49,6 +57,32 @@ namespace PgoPlugin.Debugger
                 return _CurrentCallStack;
             }
         }
+
+        private bool _DebuggerRunning;
+        public bool DebuggerRunning
+        {
+            get { return _DebuggerRunning; }
+            set { _DebuggerRunning = value; DoNotifyPropertyChanged("DebuggerRunning"); }
+        }
+
+        private string _Expression;
+        public string Expression
+        {
+            get
+            {
+                return _Expression;
+            }
+            set
+            {
+                _Expression = value;
+                ExpressionValue = Dumper.Evaluate(this.m_currentDebugger, _Expression);
+                DoNotifyPropertyChanged("Expression");
+                DoNotifyPropertyChanged("ExpressionValue");
+            }
+        }
+
+        public string ExpressionValue { get; private set; }
+
 
         internal void NagivateTo()
         {
@@ -76,12 +110,14 @@ namespace PgoPlugin.Debugger
         {
             m_currentDebugger = DebuggerService.CurrentDebugger;
             m_currentDebugger.IsProcessRunningChanged += new EventHandler(OnProcessRunningChanged);
-
+            UiInvoke(() => { DebuggerRunning = true; });
             OnProcessRunningChanged(null, EventArgs.Empty);
+
         }
 
         void OnDebugStopped(object sender, EventArgs args)
         {
+            UiInvoke(() => { DebuggerRunning = false; });
             m_currentDebugger.IsProcessRunningChanged -= new EventHandler(OnProcessRunningChanged);
             m_currentDebugger = null;
             ClearPad();
@@ -100,9 +136,11 @@ namespace PgoPlugin.Debugger
             if (debuggedProcess == null || debuggedProcess.IsRunning || debuggedProcess.SelectedThread == null)
             {
                 ClearPad();
+                UiInvoke(() => { DebuggerRunning = false; });
                 return;
             }
 
+            UiInvoke(() => { DebuggerRunning = true; });
             StackFrame activeFrame = null;
             try
             {

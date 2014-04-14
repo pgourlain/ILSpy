@@ -34,7 +34,7 @@ namespace PgoPlugin.Bookmarks
 
 		public bool IsEnabled(TextViewContext context)
 		{
-			return context != null && context.SelectedTreeNodes.Length == 1;
+			return context != null && context.SelectedTreeNodes !=null && context.SelectedTreeNodes.Length == 1;
 		}
 
 		public void Execute(TextViewContext context)

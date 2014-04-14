@@ -11,22 +11,36 @@
         </Style>
     </UserControl.Resources>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="100"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
         <Grid.Resources>
             <DataTemplate x:Key="lvItemTemplate">
                 
             </DataTemplate>
         </Grid.Resources>
-        <ListView ItemsSource="{Binding CurrentCallStack}" 
+        <ListView Name="lvVariables" ItemsSource="{Binding CurrentCallStack}" 
                   ItemTemplate="{StaticResource lvItemTemplate}" ItemContainerStyle="{StaticResource itemstyle}" 
                   SelectedItem="{Binding SelectedItem}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="100" Header="Name" DisplayMemberBinding="{Binding VariableName}" />
                     <GridViewColumn Header="Type" Width="Auto" DisplayMemberBinding="{Binding VariableType}"/>
-                    <GridViewColumn Header="Value" Width="Auto" DisplayMemberBinding="{Binding VariableValue}"/>
+                    <GridViewColumn Header="ToString()" Width="Auto" DisplayMemberBinding="{Binding VariableValue}"/>
                     <!--<GridViewColumn Header="Method" Width="Auto" DisplayMemberBinding="{Binding Method}"/>-->
                 </GridView>
             </ListView.View>
-        </ListView>            
+        </ListView>
+        <StackPanel Orientation="Vertical" Grid.Column="1" Background="LightGray" MinWidth="200" Margin="3,0,0,0" IsEnabled="{Binding DebuggerRunning}" Visibility="Collapsed">
+            <TextBlock Text="Expression to evaluate"/>
+            <TextBox Name="tbDetailValue" Grid.Column="1"
+                 Text="{Binding Path=Expression, Mode=TwoWay, UpdateSourceTrigger=Explicit}" KeyDown="tbDetailValue_KeyDown" >
+
+            </TextBox>
+            <TextBlock Text="{Binding Path=ExpressionValue}"/>
+
+        </StackPanel>
+        <GridSplitter HorizontalAlignment="Left" VerticalAlignment="Stretch" Grid.Column="1" Width="2"/>
     </Grid>
 </UserControl>

@@ -19,7 +19,8 @@ namespace PgoPlugin.Debugger
             try
             {
                 var Value = v.GetValue(frame);
-                result.VariableValue = Value.ToString();
+                result.ValueUnderDebugger = Value;
+                result.VariableValue = Value.InvokeToString();
                 result.VariableType = Value.Type.ToString();
             }
             catch (GetValueException ex)
@@ -37,7 +38,8 @@ namespace PgoPlugin.Debugger
             try
             {
                 var Value = v.GetValue(frame);
-                result.VariableValue = Value.ToString();
+                result.ValueUnderDebugger = Value;
+                result.VariableValue = Value.InvokeToString();
                 result.VariableType = Value.Type.ToString();
             }
             catch (GetValueException ex)
@@ -51,6 +53,8 @@ namespace PgoPlugin.Debugger
         public string VariableName { get; private set; }
         public string VariableType { get; set; }
         public string VariableValue { get; private set; }
+
+        public Value ValueUnderDebugger { get; set; }
 
     }
 }

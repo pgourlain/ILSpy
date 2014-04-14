@@ -58,5 +58,14 @@ namespace PgoPlugin.Debugger
         {
             presenter.NagivateTo();
         }
+
+        private void tbDetailValue_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var binding = BindingOperations.GetBindingExpression(tbDetailValue, TextBox.TextProperty);
+                binding.UpdateSource();
+            }
+        }
     }
 }

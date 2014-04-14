@@ -18,17 +18,28 @@ namespace PgoPlugin.AssemblyTooltip
             var n = selectedNode as AssemblyTreeNode;
             if (n != null && n.LoadedAssembly != null)
             {
-                var loadAssembly = n.LoadedAssembly;
-                if (loadAssembly.AssemblyDefinition != null)
-                {
-                    var ret = loadAssembly.AssemblyDefinition.FullName;
-                    ret += System.Environment.NewLine + loadAssembly.FileName;
-                    return ret;
-                }
+                return FormatString(n.LoadedAssembly, "");
+            }
+            var n1 = selectedNode as TypeTreeNode;
+            if (n1 != null)
+            {
+                return FormatString(n1.ParentAssemblyNode.LoadedAssembly, n1.TypeDefinition.FullName + Environment.NewLine);
             }
             return null;
         }
 
         #endregion
+
+        private static string FormatString(LoadedAssembly ass, string header)
+        {
+            var loadAssembly = ass;
+            if (loadAssembly.AssemblyDefinition != null)
+            {
+                var ret = loadAssembly.AssemblyDefinition.FullName;
+                ret += System.Environment.NewLine + loadAssembly.FileName;
+                return header + ret;
+            }
+            return null;
+        }
     }
 }
