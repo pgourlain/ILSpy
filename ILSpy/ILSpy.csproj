@@ -143,6 +143,7 @@
     <Compile Include="Languages\Language.cs" />
     <Compile Include="Images\Images.cs" />
     <Compile Include="Languages\Languages.cs" />
+    <Compile Include="Levenstein.cs" />
     <Compile Include="LoadedAssembly.cs" />
     <Compile Include="MainWindowSplashScreen.xaml.cs">
       <DependentUpon>MainWindowSplashScreen.xaml</DependentUpon>
@@ -152,6 +153,7 @@
     <Compile Include="NavigationState.cs" />
     <Compile Include="Commands\OpenCommand.cs" />
     <Compile Include="Commands\OpenFromGacCommand.cs" />
+    <Compile Include="ObservableSortedList.cs" />
     <Compile Include="OpenFromGacDialog.xaml.cs">
       <DependentUpon>OpenFromGacDialog.xaml</DependentUpon>
       <SubType>Code</SubType>
