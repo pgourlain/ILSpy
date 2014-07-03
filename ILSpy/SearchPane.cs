@@ -306,7 +306,7 @@ namespace ICSharpCode.ILSpy
 				}
 				dispatcher.BeginInvoke(
 					DispatcherPriority.Normal,
-					new Action(delegate { this.Results.Add(result); }));
+					new Action(delegate { this.Results.Insert(this.Results.Count - 1, result); }));
 				cts.Token.ThrowIfCancellationRequested();
 			}
 			

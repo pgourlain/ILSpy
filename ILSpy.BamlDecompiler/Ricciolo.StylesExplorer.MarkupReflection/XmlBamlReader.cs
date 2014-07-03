@@ -682,13 +682,21 @@ namespace Ricciolo.StylesExplorer.MarkupReflection
 				return declaration;
 			} else {
 				identifier = (short)-identifier;
-				bool isNotKey = (identifier > 0xe8);
-				if (isNotKey)
-					identifier = (short)(identifier - 0xe8);
+				bool isKey = true;
+				if (identifier > 0xe8 && identifier < 0x1d0) {
+					isKey = false;
+					identifier -= 0xe8;
+				} else if (identifier > 0x1d0 && identifier < 0x1d3) {
+					identifier -= 0xe7;
+				} else if (identifier > 0x1d3 && identifier < 0x1d6) {
+					identifier -= 0xea;
+					isKey = false;
+				}
 				ResourceName resource;
 				if (!KnownInfo.KnownResourceTable.TryGetValue(identifier, out resource))
+//					resource = new ResourceName("???Resource" + identifier + "???");
 					throw new ArgumentException("Cannot find resource name " + identifier);
-				if (!isNotKey)
+				if (isKey)
 					return new ResourceName(resource.Name + "Key");
 				return resource;
 			}
@@ -1308,7 +1316,7 @@ namespace Ricciolo.StylesExplorer.MarkupReflection
 		{
 			reader.ReadInt16();
 
-			// Non serve aprire niente, è il default
+			// Non serve aprire niente, ?il default
 		}
 
 		static void ReadConstructorParametersStart()
@@ -1553,8 +1561,10 @@ namespace Ricciolo.StylesExplorer.MarkupReflection
 
 		object GetStaticResource(short identifier)
 		{
-			int keyIndex = currentKey - 1;
-			while (keyIndex >= 0 && !keys[keyIndex].HasStaticResources)
+			int keyIndex = Math.Max(0, currentKey - 1);
+			while (keyIndex > keys.Count)
+				keyIndex--;
+			while (keyIndex >= 0 && !keys[keyIndex].HasStaticResource(identifier))
 				keyIndex--;
 			if (keyIndex >= 0 && identifier < keys[keyIndex].StaticResources.Count)
 				return keys[keyIndex].StaticResources[(int)identifier];
@@ -1578,7 +1588,8 @@ namespace Ricciolo.StylesExplorer.MarkupReflection
 			string fullName = reader.ReadString();
 			assemblyId = (short)(assemblyId & 0xfff);
 			TypeDeclaration declaration;
-			int length = fullName.LastIndexOf('.');
+			int bracket = fullName.IndexOf('[');
+			int length = bracket > -1 ? fullName.LastIndexOf('.', bracket) : fullName.LastIndexOf('.');
 			if (length != -1)
 			{
 				string name = fullName.Substring(length + 1);

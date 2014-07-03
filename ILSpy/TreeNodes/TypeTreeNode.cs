@@ -23,7 +23,6 @@ using System.Windows.Media;
 
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
-using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -60,7 +59,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		}
 		
 		public override object Text {
-			get { return HighlightSearchMatch(this.Language.FormatTypeName(type)); }
+			get { return HighlightSearchMatch(this.Language.FormatTypeName(type), type.MetadataToken.ToSuffixString()); }
 		}
 		
 		public override bool IsPublicAPI {

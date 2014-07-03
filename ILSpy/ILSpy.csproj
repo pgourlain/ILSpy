@@ -186,6 +186,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\SimpleCommand.cs" />
+    <Compile Include="TaskHelper.cs" />
     <Compile Include="TooltipEntry.cs" />
     <Compile Include="TextView\FoldingCommands.cs" />
     <Compile Include="TreeNodes\Analyzer\AnalyzeContextMenuEntry.cs" />
@@ -408,7 +409,9 @@
       <Name>ICSharpCode.TreeView</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\AssemblyListGAC.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\loading_14.gif" />
     <Resource Include="Images\loading_12.gif" />

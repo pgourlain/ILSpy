@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Navigation;
@@ -94,6 +95,7 @@ namespace ICSharpCode.ILSpy
 				AppDomain.CurrentDomain.UnhandledException += ShowErrorBox;
 				Dispatcher.CurrentDispatcher.UnhandledException += Dispatcher_UnhandledException;
 			}
+			TaskScheduler.UnobservedTaskException += DotNet40_UnobservedTaskException;
 			
 			EventManager.RegisterClassHandler(typeof(Window),
 			                                  Hyperlink.RequestNavigateEvent,
@@ -143,6 +145,12 @@ namespace ICSharpCode.ILSpy
 			} catch (ArgumentException) {
 				return argument;
 			}
+		}
+
+		void DotNet40_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+		{
+			// On .NET 4.0, an unobserved exception in a task terminates the process unless we mark it as observed
+			e.SetObserved();
 		}
 		
 		#region Exception Handling
