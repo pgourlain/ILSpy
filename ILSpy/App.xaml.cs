@@ -29,7 +29,6 @@ using System.Windows.Documents;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 
-using ICSharpCode.ILSpy.Debugger.Services;
 using ICSharpCode.ILSpy.TextView;
 
 namespace ICSharpCode.ILSpy
@@ -107,11 +106,6 @@ namespace ICSharpCode.ILSpy
 
 
 			
-			try {
-				DebuggerService.SetDebugger(compositionContainer.GetExport<IDebugger>());
-			} catch {
-				// unable to find a IDebugger
-			}
 		}
         private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
         {
@@ -231,8 +225,6 @@ namespace ICSharpCode.ILSpy
 					}
 				}
 				ILSpy.MainWindow.Instance.TextView.ShowText(output);
-			} else {
-				Process.Start(e.Uri.ToString());
 			}
 		}
 	}

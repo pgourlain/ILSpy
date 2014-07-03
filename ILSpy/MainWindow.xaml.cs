@@ -32,7 +32,6 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ICSharpCode.Decompiler;
-using ICSharpCode.ILSpy.Debugger;
 using ICSharpCode.ILSpy.TextView;
 using ICSharpCode.ILSpy.TreeNodes;
 using ICSharpCode.ILSpy.XmlDoc;
@@ -50,7 +49,7 @@ namespace ICSharpCode.ILSpy
 		readonly NavigationHistory<NavigationState> history = new NavigationHistory<NavigationState>();
 		ILSpySettings spySettings;
 		internal SessionSettings sessionSettings;
-
+		
 		internal AssemblyListManager assemblyListManager;
 		AssemblyList assemblyList;
 		AssemblyListTreeNode assemblyListTreeNode;
@@ -639,13 +638,9 @@ namespace ICSharpCode.ILSpy
 		
 		void RefreshCommandExecuted(object sender, ExecutedRoutedEventArgs e)
 		{
-			if (!DebugInformation.IsDebuggerLoaded) {
-				var path = GetPathForNode(treeView.SelectedItem as SharpTreeNode);
-				ShowAssemblyList(assemblyListManager.LoadList(ILSpySettings.Load(), assemblyList.ListName));
-				SelectNode(FindNodeByPath(path, true));
-			} else {
-				e.Handled = false;
-			}
+			var path = GetPathForNode(treeView.SelectedItem as SharpTreeNode);
+			ShowAssemblyList(assemblyListManager.LoadList(ILSpySettings.Load(), assemblyList.ListName));
+			SelectNode(FindNodeByPath(path, true));
 		}
 		
 		void SearchCommandExecuted(object sender, ExecutedRoutedEventArgs e)
