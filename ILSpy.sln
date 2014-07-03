@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.30324.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{F45DB999-7E72-4000-B5AD-3A7B485A0896}"
 	ProjectSection(SolutionItems) = preProject
@@ -43,6 +43,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.CSharp", "NRefactory\ICSharpCode.NRefactory.CSharp\ICSharpCode.NRefactory.CSharp.csproj", "{53DCA265-3C3C-42F9-B647-F72BA678122B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgoPlugin", "PgoPlugin\PgoPlugin.csproj", "{39AC32B8-15E8-48E5-B33F-253104506A6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgoPlugin.Debugger", "PgoPlugin.Debugger\PgoPlugin.Debugger.csproj", "{F7AD0E74-D09E-48F8-ADCE-F96679C1B0C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -180,6 +182,12 @@ Global
 		{39AC32B8-15E8-48E5-B33F-253104506A6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39AC32B8-15E8-48E5-B33F-253104506A6F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{39AC32B8-15E8-48E5-B33F-253104506A6F}.Release|x86.ActiveCfg = Release|Any CPU
+		{F7AD0E74-D09E-48F8-ADCE-F96679C1B0C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7AD0E74-D09E-48F8-ADCE-F96679C1B0C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7AD0E74-D09E-48F8-ADCE-F96679C1B0C9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F7AD0E74-D09E-48F8-ADCE-F96679C1B0C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7AD0E74-D09E-48F8-ADCE-F96679C1B0C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7AD0E74-D09E-48F8-ADCE-F96679C1B0C9}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

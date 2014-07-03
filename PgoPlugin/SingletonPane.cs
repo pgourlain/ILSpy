@@ -7,9 +7,9 @@ using System.Windows.Controls;
 
 namespace PgoPlugin
 {
-    internal class SingletonPane<T> where T : new()
+    public class SingletonPane<T> where T : new()
     {
-        public SingletonPane()
+        private SingletonPane()
         {
 
         }

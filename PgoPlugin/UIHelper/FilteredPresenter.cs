@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Windows.Data;
-using PgoPlugin.Debugger;
 
 namespace PgoPlugin.UIHelper
 {

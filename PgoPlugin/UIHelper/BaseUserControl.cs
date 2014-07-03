@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PgoPlugin.Debugger;
 using ICSharpCode.ILSpy;
 
 namespace PgoPlugin.UIHelper
