@@ -32,8 +32,6 @@ using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using WpfCrutches;
-using SimMetricsMetricUtilities;
 
 namespace ICSharpCode.ILSpy
 {
@@ -190,40 +188,13 @@ namespace ICSharpCode.ILSpy
 		
 		sealed class RunningSearch
 		{
-            class NearOriginalMatch : System.Collections.Generic.IComparer<SearchResult>
-            {
-                static readonly Levenstein editDistance = new Levenstein();
-
-                private string searchTerm;
-
-                public NearOriginalMatch(string searchTerm)
-                {
-                    this.searchTerm = searchTerm;
-                }
-
-                public int Compare(SearchResult x, SearchResult y)
-                {
-                    var d1 = editDistance.GetUnnormalisedSimilarity(searchTerm, x.Name);
-                    var d2 = editDistance.GetUnnormalisedSimilarity(searchTerm, y.Name);
-                    if (d1 < d2)
-                    {
-                        return -1;
-                    }
-                    else if (d1 > d2)
-                    {
-                        return 1;
-                    }
-                    return string.Compare(x.Name, y.Name, true);
-                }
-            }
-
 			readonly Dispatcher dispatcher;
 			readonly CancellationTokenSource cts = new CancellationTokenSource();
 			readonly LoadedAssembly[] assemblies;
 			readonly string[] searchTerm;
 			readonly int searchMode;
 			readonly Language language;
-            public readonly ObservableSortedList<SearchResult> Results;
+			public readonly ObservableCollection<SearchResult> Results = new ObservableCollection<SearchResult>();
 			int resultCount;
 			
 			TypeCode searchTermLiteralType = TypeCode.Empty;
@@ -236,8 +207,7 @@ namespace ICSharpCode.ILSpy
 				this.searchTerm = searchTerm.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 				this.language = language;
 				this.searchMode = searchMode;
-
-                this.Results = new ObservableSortedList<SearchResult>(comparer: new NearOriginalMatch(searchTerm));
+				
 				this.Results.Add(new SearchResult { Name = "Searching..." });
 			}
 			
