@@ -1,0 +1,57 @@
+﻿<local:PgoBookmarksPaneBase x:Class="PgoPlugin.Bookmarks.PgoBookmarksPane"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:controls="clr-namespace:ICSharpCode.ILSpy.Controls;assembly=ILSpy"
+			 xmlns:local="clr-namespace:PgoPlugin.Bookmarks"
+			 xmlns:util="clr-namespace:PgoPlugin.Util"
+			 mc:Ignorable="d" 
+			 d:DesignHeight="300" d:DesignWidth="300">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<Grid Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition />
+				<ColumnDefinition />
+			</Grid.ColumnDefinitions>
+			<controls:SearchBox x:Name="searchBox" DockPanel.Dock="Top" Grid.Column="0" Grid.Row="0" Margin="1"
+						PreviewKeyDown="SearchBox_PreviewKeyDown"
+						Text="{Binding SearchTerm}" ToolTip="Search" UpdateDelay="0:0:0.5"
+						WatermarkColor="Gray" WatermarkText="Search" />
+		</Grid>
+		<ListView x:Name="lvExtentions" ItemsSource="{Binding ModelsView}" Grid.Row="1" 
+				  util:GridViewSort.AutoSort="True">
+			<ListView.InputBindings>
+				<KeyBinding Key="Delete" Command="{Binding RemoveCommand}" />
+			</ListView.InputBindings>
+				<ListView.View>
+				<GridView>
+					<GridViewColumn Width="Auto" Header="Assembly" DisplayMemberBinding="{Binding AssemblyName}" 
+									util:GridViewSort.PropertyName="AssemblyName"/>
+					<GridViewColumn Header="Type" Width="Auto" DisplayMemberBinding="{Binding TypeName}"
+									util:GridViewSort.PropertyName="TypeName"/>
+					<GridViewColumn Header="FullDefinition" Width="Auto" DisplayMemberBinding="{Binding FullDefinition}"
+									util:GridViewSort.PropertyName="FullDefinition"/>
+					<GridViewColumn Width="Auto" Header="" >
+						<GridViewColumn.CellTemplate>
+							<DataTemplate>
+								<Button Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+										CommandParameter="{Binding}">
+									<Button.Template>
+										<ControlTemplate>
+											<Image Source="/Pgo.Plugin;component/delete.png" Width="16" Height="16"/>
+										</ControlTemplate>
+									</Button.Template>
+								</Button>
+							</DataTemplate>
+						</GridViewColumn.CellTemplate>
+					</GridViewColumn>
+				</GridView>
+			</ListView.View>
+		</ListView>
+	</Grid>
+</local:PgoBookmarksPaneBase>

@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{39AC32B8-15E8-48E5-B33F-253104506A6F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PgoPlugin</RootNamespace>
+    <AssemblyName>Pgo.Plugin</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\ILSpy\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\ILSpy\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.NRefactory, Version=5.0.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Bookmarks\BookmarkModel.cs" />
+    <Compile Include="Bookmarks\PgoBookmarksPane.xaml.cs">
+      <DependentUpon>PgoBookmarksPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Bookmarks\RelayCommand.cs" />
+    <Compile Include="CallStackParser\CallStackParserCommand.cs" />
+    <Compile Include="CallStackParser\CallStackParserModel.cs" />
+    <Compile Include="CallStackParser\CallStackParserPresenter.cs" />
+    <Compile Include="CallStackParser\CallStackParserView.xaml.cs">
+      <DependentUpon>CallStackParserView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CallStackParser\ExceptionStackTraceParser.cs" />
+    <Compile Include="UIHelper\BaseUserControl.cs" />
+    <Compile Include="Bookmarks\AddBookmark.cs" />
+    <Compile Include="Bookmarks\BookmarkPresenter.cs" />
+    <Compile Include="Bookmarks\BookmarksCommand.cs" />
+    <Compile Include="UIHelper\BasePresenter.cs" />
+    <Compile Include="UIHelper\ObservableObject.cs" />
+    <Compile Include="LinqApi\LinqApiModel.cs" />
+    <Compile Include="LinqApi\PgoLinqApiCommand.cs" />
+    <Compile Include="LinqApi\PgoLinqApiPane.xaml.cs">
+      <DependentUpon>PgoLinqApiPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LinqApi\PgoLinqApiPanePresenter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReloadAssembly\ReloadAssemblyCommand.cs" />
+    <Compile Include="ResourceFinder\ResourceFinderCommand.cs" />
+    <Compile Include="ResourceFinder\ResourceFinderPane.xaml.cs">
+      <DependentUpon>ResourceFinderPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ResourceFinder\ResourceFinderPanePresenter.cs" />
+    <Compile Include="ResourceFinder\ResourceItem.cs" />
+    <Compile Include="SingletonPane.cs" />
+    <Compile Include="SortAssembly\SortAssembliesCommand.cs" />
+    <Compile Include="UIHelper\FilteredPresenter.cs" />
+    <Compile Include="Util\GridViewSort.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
+      <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
+      <Name>ICSharpCode.Decompiler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ILSpy\ILSpy.csproj">
+      <Project>{1E85EFF9-E370-4683-83E4-8A3D063FF791}</Project>
+      <Name>ILSpy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharpTreeView\ICSharpCode.TreeView.csproj">
+      <Project>{DDE2A481-8271-4EAC-A330-8FA6A38D13D1}</Project>
+      <Name>ICSharpCode.TreeView</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="bookmarks.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="addbookmark.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Bookmarks\PgoBookmarksPane.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="CallStackParser\CallStackParserView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LinqApi\PgoLinqApiPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ResourceFinder\ResourceFinderPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="callstack.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="sort.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="sortd.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="lambda.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="SaveBreakpoints.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="LoadBreakpoints.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="callstackparser.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

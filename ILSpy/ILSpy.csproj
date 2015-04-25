@@ -150,6 +150,9 @@
     <Compile Include="Images\Images.cs" />
     <Compile Include="Languages\Languages.cs" />
     <Compile Include="LoadedAssembly.cs" />
+    <Compile Include="MainWindowSplashScreen.xaml.cs">
+      <DependentUpon>MainWindowSplashScreen.xaml</DependentUpon>
+    </Compile>
     <Compile Include="NativeMethods.cs" />
     <Compile Include="NavigationHistory.cs" />
     <Compile Include="NavigationState.cs" />
@@ -187,6 +190,7 @@
     </Compile>
     <Compile Include="Commands\SimpleCommand.cs" />
     <Compile Include="SearchStrategies.cs" />
+    <Compile Include="SplashScreen.cs" />
     <Compile Include="TaskHelper.cs" />
     <Compile Include="TextView\EditorCommands.cs" />
     <Compile Include="TextView\FoldingCommands.cs" />
@@ -317,6 +321,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindow.xaml" />
+    <Page Include="MainWindowSplashScreen.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="OpenFromGacDialog.xaml" />
     <Page Include="OpenListDialog.xaml" />
     <Page Include="Options\DecompilerSettingsPanel.xaml" />
@@ -406,6 +414,14 @@
     <Resource Include="Images\ResourceXsd.png" />
     <Resource Include="Images\ResourceXslt.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\loading_11.gif" />
+    <Resource Include="Images\loading_12.gif" />
+    <Resource Include="Images\loading_13.gif" />
+    <Resource Include="Images\loading_14.gif" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

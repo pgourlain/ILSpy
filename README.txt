@@ -19,3 +19,9 @@ ILSpy Contributors:
 	Artur Zgodzinski
 	Eusebiu Marcu
 	Pent Ploompuu
+Pierrick Gourlain has added some features in this fork :
+- plugin to sort assemblies in treeview
+- plugin to show/search linq apis (extensions)
+- plugin to search resources through assemblies
+- plugin to manage bookmarks
+- plugin to parse exception stack trace

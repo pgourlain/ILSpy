@@ -1,0 +1,47 @@
+﻿<local:CallStackParserViewBase x:Class="PgoPlugin.CallStackParser.CallStackParserView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PgoPlugin.CallStackParser"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" Background="White">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Expander Grid.Row="0" IsExpanded="True" Header="Exception parser" MaxHeight="500">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Button Content="Parse" HorizontalAlignment="Left" Click="Button_Click" IsEnabled="{Binding CanParse}"/>
+                <TextBox x:Name="tbExceptionTrace" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" 
+                         MinWidth="280" MinHeight="100" ToolTip="Paste your exception stack trace here."
+                         AcceptsReturn="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
+                         Text="{Binding ExceptionStackTrace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </Grid>
+        </Expander>
+        <ListView x:Name="lvCallStack" Grid.Row="1" Background="AliceBlue" MinHeight="100" ItemsSource="{Binding ModelsView}" MouseDoubleClick="ListView_MouseDoubleClick">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="Auto" Header="Method" DisplayMemberBinding="{Binding DisplayText}"/>
+                </GridView>
+            </ListView.View>
+            <ListView.Resources>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasMethodDefinition}" Value="false">
+                            <Setter Property="Foreground" Value="Gray" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.Resources>
+        </ListView>
+        <Border Grid.Row="0" Grid.RowSpan="2" Background="AliceBlue" Visibility="{Binding Parsing}">
+            <TextBlock TextAlignment="Center" Text="Parsing...." VerticalAlignment="Center" FontSize="36"/>
+        </Border>
+    </Grid>
+</local:CallStackParserViewBase>

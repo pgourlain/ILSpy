@@ -56,6 +56,7 @@ namespace ICSharpCode.ILSpy
 		
 		public App()
 		{
+			SplashScreen.Start();
 			var cmdArgs = Environment.GetCommandLineArgs().Skip(1);
 			App.CommandLineArguments = new CommandLineArguments(cmdArgs);
 			if (App.CommandLineArguments.SingleInstance ?? true) {
@@ -96,10 +97,36 @@ namespace ICSharpCode.ILSpy
 			TaskScheduler.UnobservedTaskException += DotNet40_UnobservedTaskException;
 			
 			EventManager.RegisterClassHandler(typeof(Window),
-			                                  Hyperlink.RequestNavigateEvent,
-			                                  new RequestNavigateEventHandler(Window_RequestNavigate));
+											  Hyperlink.RequestNavigateEvent,
+											  new RequestNavigateEventHandler(Window_RequestNavigate));
+			EventManager.RegisterClassHandler(typeof(MainWindow),
+											  Window.LoadedEvent,
+											  new RoutedEventHandler(OnMainWindowLoaded));
+
+
+
 			
 		}
+		private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
+		{
+			CloseSplashScreen();
+			this.MainWindow.Activate();
+		}
+
+		private static void CloseSplashScreen()
+		{
+			SplashScreen.Stop();
+		}
+
+
+
+
+
+
+
+
+
+
 		
 		string FullyQualifyPath(string argument)
 		{
@@ -198,6 +225,8 @@ namespace ICSharpCode.ILSpy
 					}
 				}
 				ILSpy.MainWindow.Instance.TextView.ShowText(output);
+			} else {
+				Process.Start(e.Uri.ToString());
 			}
 		}
 	}
