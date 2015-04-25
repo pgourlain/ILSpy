@@ -42,7 +42,6 @@ namespace PgoPlugin.ResourceFinder
             var selectedItem = lvExtentions.SelectedItem as ResourceItem;
             if (selectedItem != null)
             {
-
                 MainWindow.Instance.JumpToReference(selectedItem.Resource);
             }
         }
