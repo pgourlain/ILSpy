@@ -35,10 +35,10 @@ using System.Runtime.InteropServices;
 internal static class RevisionClass
 {
 	public const string Major = "2";
-	public const string Minor = "2";
+	public const string Minor = "5";
 	public const string Build = "0";
 	public const string Revision = "1708";
 	public const string VersionName = null;
 	
-	public const string FullVersion = Major + "." + Minor + "." + Build + ".1708-decompiling_obfuscated_code";
+	public const string FullVersion = Major + "." + Minor + "." + Build + ".1708-with_debugger";
 }
