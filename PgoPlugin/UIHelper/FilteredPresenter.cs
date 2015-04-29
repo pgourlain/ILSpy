@@ -54,6 +54,16 @@ namespace PgoPlugin.UIHelper
 
         public ListCollectionView ModelsView { get { return this._View; } }
 
-
+        protected void RunAsync(Func<IEnumerable<TModel>> source)
+        {
+            RunAsync(source, results =>
+            {
+                this.Models.Clear();
+                foreach (var item in results)
+                {
+                    this.Models.Add(item);
+                }
+            });
+        }
     }
 }

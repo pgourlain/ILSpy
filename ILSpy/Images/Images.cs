@@ -91,7 +91,7 @@ namespace ICSharpCode.ILSpy
 
 		public static readonly BitmapImage Event = LoadBitmap("Event");
 
-		private static readonly BitmapImage OverlayProtected = LoadBitmap("OverlayProtected");
+        private static readonly BitmapImage OverlayProtected = LoadBitmap("OverlayProtected");
 		private static readonly BitmapImage OverlayInternal = LoadBitmap("OverlayInternal");
 		private static readonly BitmapImage OverlayProtectedInternal = LoadBitmap("OverlayProtectedInternal");
 		private static readonly BitmapImage OverlayPrivate = LoadBitmap("OverlayPrivate");

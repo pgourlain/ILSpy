@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -140,14 +141,22 @@ namespace ICSharpCode.ILSpy.TextView
 		
 		#region Tooltip support
 		ToolTip tooltip;
-		
+
+        [ImportMany(typeof(IDecompilationViewEvents))]
+        Lazy<IDecompilationViewEvents>[] entries = null;
+        
 		void TextViewMouseHoverStopped(object sender, MouseEventArgs e)
 		{
 			if (tooltip != null)
 				tooltip.IsOpen = false;
+
+            foreach (var item in entries)
+            {
+                item.Value.MouseHoverStopped();
+            }
 		}
 
-		void TextViewMouseHover(object sender, MouseEventArgs e)
+        void TextViewMouseHover(object sender, MouseEventArgs e)
 		{
 			TextViewPosition? position = textEditor.TextArea.TextView.GetPosition(e.GetPosition(textEditor.TextArea.TextView) + textEditor.TextArea.TextView.ScrollOffset);
 			if (position == null)
@@ -161,9 +170,13 @@ namespace ICSharpCode.ILSpy.TextView
 				tooltip.IsOpen = false;
 			if (content != null)
 				tooltip = new ToolTip() { Content = content, IsOpen = true };
-		}
-		
-		object GenerateTooltip(ReferenceSegment segment)
+            foreach (var item in entries)
+            {
+                item.Value.MouseHover(this, e, seg);
+            }
+        }
+
+        object GenerateTooltip(ReferenceSegment segment)
 		{
 			if (segment.Reference is Mono.Cecil.Cil.OpCode) {
 				Mono.Cecil.Cil.OpCode code = (Mono.Cecil.Cil.OpCode)segment.Reference;

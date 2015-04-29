@@ -52,12 +52,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Analyser\DerivedTypesAnalyzeMenuEntry.cs" />
-    <Compile Include="Analyser\DerivedTypesModel.cs" />
-    <Compile Include="Analyser\DerivedTypesPresenter.cs" />
-    <Compile Include="Analyser\PgoDerivedTypesAnalyzerPane.xaml.cs">
-      <DependentUpon>PgoDerivedTypesAnalyzerPane.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Bookmarks\BookmarkModel.cs" />
     <Compile Include="Bookmarks\PgoBookmarksPane.xaml.cs">
       <DependentUpon>PgoBookmarksPane.xaml</DependentUpon>
@@ -70,6 +64,12 @@
       <DependentUpon>CallStackParserView.xaml</DependentUpon>
     </Compile>
     <Compile Include="CallStackParser\ExceptionStackTraceParser.cs" />
+    <Compile Include="DecompilerViewExtensions\SmartTagAdorner.cs" />
+    <Compile Include="DecompilerViewExtensions\SmartTagPopup.cs" />
+    <Compile Include="DecompilerViewExtensions\SmartTagUI.xaml.cs">
+      <DependentUpon>SmartTagUI.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Images\Images.cs" />
     <Compile Include="UIHelper\BaseUserControl.cs" />
     <Compile Include="Bookmarks\AddBookmark.cs" />
     <Compile Include="Bookmarks\BookmarkPresenter.cs" />
@@ -124,15 +124,15 @@
     <Resource Include="addbookmark.png" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Analyser\PgoDerivedTypesAnalyzerPane.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Bookmarks\PgoBookmarksPane.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="CallStackParser\CallStackParserView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DecompilerViewExtensions\SmartTagUI.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -177,6 +177,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ComboButton.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

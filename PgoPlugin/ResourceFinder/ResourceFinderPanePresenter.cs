@@ -7,16 +7,10 @@ using PgoPlugin.UIHelper;
 
 namespace PgoPlugin.ResourceFinder
 {
-    public class ResourceFinderPanePresenter : BasePresenter
+    public class ResourceFinderPanePresenter : FilteredPresenter<ResourceItem>
     {
-        ListCollectionView _resourcesView;
-        ObservableCollection<object> _resources;
-
         public ResourceFinderPanePresenter ()
         {
-            _resources = new ObservableCollection<object>();
-            _resourcesView = new ListCollectionView(_resources);
-            this._resourcesView.Filter = OnFiltered;
         }
 
         protected internal override void ViewReady()
@@ -43,46 +37,20 @@ namespace PgoPlugin.ResourceFinder
             var definitions = assemblies.Where(x => x.IsLoaded).Where(x => x.AssemblyDefinition != null).Select(x => x.AssemblyDefinition);
             var resourceModules = definitions.SelectMany(x => x.Modules);
 
-            this._resources.Clear();
+            this.Models.Clear();
             foreach (var item in resourceModules)
             {
                 foreach (var resource in item.Resources)
                 {
                     var resourceItem = new ResourceItem { AssemblyName=item.Assembly.Name.Name, ResourceType = resource.ResourceType.ToString(), ResourceName = resource.Name, Resource = resource };
-                    this._resources.Add(resourceItem);                    
+                    this.Models.Add(resourceItem);                    
                 }
             }
         }
-        
-        public ObservableCollection<object> Resources { get { return _resources; } }
 
-        public ListCollectionView ResourcesView { get { return _resourcesView; } }
-
-        string _searchTerm;
-        public string SearchTerm
+        protected override bool OnFiltered(object value)
         {
-            get
-            {
-                return _searchTerm;
-            }
-            set
-            {
-                if (_searchTerm != value)
-                {
-                    _searchTerm = value;
-                    UpdateFilteredItems();
-                }
-            }
-        }
-    
-        private void UpdateFilteredItems()
-        {
-            this._resourcesView.Refresh();
-        }
-
-        private bool OnFiltered(object value)
-        {
-            if (string.IsNullOrWhiteSpace(this._searchTerm))
+            if (string.IsNullOrWhiteSpace(this.SearchTerm))
                 return true;
             var model = value as ResourceItem;
             if (model != null)

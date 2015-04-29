@@ -6,7 +6,7 @@ using Mono.Cecil;
 
 namespace PgoPlugin.ResourceFinder
 {
-    class ResourceItem
+    public class ResourceItem
     {
         public string AssemblyName { get; set; }
         public string ResourceName { get; set; }

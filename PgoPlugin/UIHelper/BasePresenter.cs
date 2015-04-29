@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 
 namespace PgoPlugin.UIHelper
@@ -26,5 +27,25 @@ namespace PgoPlugin.UIHelper
 
         internal protected abstract void ViewClose();
 
+
+        protected void RunAsync<T>(Func<T> source, Action<T> updateUI)
+        {
+            BeforeRunAsync();
+            Task.Factory.StartNew<T>(source).ContinueWith(t =>
+            {
+                AfterRunAsync();
+                updateUI(t.Result);
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        protected void BeforeRunAsync()
+        {
+
+        }
+
+        protected void AfterRunAsync()
+        {
+
+        }
     }
 }
