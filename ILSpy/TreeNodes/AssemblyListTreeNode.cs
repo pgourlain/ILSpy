@@ -156,10 +156,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
             return null;
         }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> remotes/ilspy/master
         public AssemblyTreeNode FindAssemblyNode(ModuleDefinition module)
 		{
 			if (module == null)
