@@ -38,12 +38,12 @@ namespace PgoPlugin.UIHelper
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        protected void BeforeRunAsync()
+        protected virtual void BeforeRunAsync()
         {
 
         }
 
-        protected void AfterRunAsync()
+        protected virtual void AfterRunAsync()
         {
 
         }

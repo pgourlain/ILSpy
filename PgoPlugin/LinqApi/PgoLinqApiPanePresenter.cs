@@ -61,17 +61,7 @@ namespace PgoPlugin.LinqApi
 
         private void UpdateList()
         {
-            Loading = Visibility.Visible;
-            Task.Factory.StartNew<IEnumerable<LinqApiModel>>(() => GetLinqApis()).ContinueWith(t =>
-            {
-                Loading = Visibility.Hidden;
-                this.LinqApis.Clear();
-                foreach (var item in t.Result)
-                {
-                    this.LinqApis.Add(item);
-                }
-
-            }, TaskScheduler.FromCurrentSynchronizationContext()); 
+            RunAsync(() => GetLinqApis());
         }
 
         void Instance_CurrentAssemblyListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -83,7 +73,7 @@ namespace PgoPlugin.LinqApi
         {
         }
 
-        public ObservableCollection<LinqApiModel> LinqApis { get { return this.Models; } }
+        //public ObservableCollection<LinqApiModel> LinqApis { get { return this.Models; } }
 
         public IEnumerable<string> SearchKinds
         {
@@ -109,17 +99,6 @@ namespace PgoPlugin.LinqApi
                     _selectedSearchKind = value;
                     UpdateFilteredItems();
                 }
-            }
-        }
-
-        Visibility _loading;
-        public Visibility Loading
-        {
-            get { return _loading; }
-            set
-            {
-                _loading = value;
-                DoNotifyPropertyChanged("Loading");
             }
         }
 

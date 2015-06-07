@@ -70,6 +70,11 @@
       <DependentUpon>SmartTagUI.xaml</DependentUpon>
     </Compile>
     <Compile Include="Images\Images.cs" />
+    <Compile Include="ReferencesView\ReferenceItem.cs" />
+    <Compile Include="ReferencesView\ReferencesView.xaml.cs">
+      <DependentUpon>ReferencesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ReferencesView\ReferencesViewPresenter.cs" />
     <Compile Include="UIHelper\BaseUserControl.cs" />
     <Compile Include="Bookmarks\AddBookmark.cs" />
     <Compile Include="Bookmarks\BookmarkPresenter.cs" />
@@ -140,6 +145,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ReferencesView\ReferencesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ResourceFinder\ResourceFinderPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -184,6 +193,7 @@
   <ItemGroup>
     <Resource Include="Images\ComboButton.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

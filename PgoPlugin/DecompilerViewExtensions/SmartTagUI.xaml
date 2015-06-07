@@ -5,10 +5,29 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="22" d:DesignWidth="33">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="boolToVis"/>
+    </UserControl.Resources>
     <Border BorderBrush="LightGray" BorderThickness="1" Background="White" Grid.Column="0" Height="22">
-        <StackPanel Orientation="Horizontal">
-            <Image x:Name="lightImage" Grid.Column="0" Source="Images/Light.png" Width="22" Height="16"/>
-            <Image x:Name="comboImage" Grid.Column="1" Source="Images/ComboButton.png"  Visibility="Collapsed" Width="11" Height="16"/>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Image x:Name="lightImage" Grid.Column="0" Source="Images/Light.png" Width="22" Height="16"/>
+                <ToggleButton Visibility="Collapsed" Grid.Column="1" x:Name="togglePopup" IsChecked="False">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Image Grid.Column="1" Source="{TemplateBinding Property=Tag}" Width="11" Height="16"/>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                </ToggleButton>
+            </StackPanel>
+            <Popup x:Name="menuPopup"  IsOpen="{Binding IsChecked, ElementName=togglePopup}" StaysOpen="False">
+                <StackPanel Orientation="Vertical" Background="AliceBlue">
+                    <MenuItem Header="Find references" Click="MenuItem_Click"/>
+                    <!--<MenuItem Header="tagada"/>
+                    <MenuItem Header="coucouc coucou"/>
+                    <MenuItem Header="ladfkd qsd:kf"/>-->
+                </StackPanel>
+            </Popup>
         </StackPanel>
     </Border>
 </UserControl>

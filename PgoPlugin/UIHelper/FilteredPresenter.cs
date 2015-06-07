@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Data;
 
 namespace PgoPlugin.UIHelper
@@ -64,6 +65,27 @@ namespace PgoPlugin.UIHelper
                     this.Models.Add(item);
                 }
             });
+        }
+
+        protected override void BeforeRunAsync()
+        {
+            this.Loading = Visibility.Visible;
+        }
+
+        protected override void AfterRunAsync()
+        {
+            this.Loading = Visibility.Hidden;
+        }
+
+        Visibility _loading;
+        public Visibility Loading
+        {
+            get { return _loading; }
+            set
+            {
+                _loading = value;
+                DoNotifyPropertyChanged("Loading");
+            }
         }
     }
 }

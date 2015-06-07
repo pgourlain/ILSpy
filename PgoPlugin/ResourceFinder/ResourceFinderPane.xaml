@@ -28,7 +28,7 @@
                 <ComboBox  ItemsSource="{Binding SearchKinds}" Width="130" SelectedItem="{Binding SelectedSearchKind}"/>
             </StackPanel>-->
         </Grid>
-        <ListView x:Name="lvExtentions" ItemsSource="{Binding ResourcesView}" Grid.Row="1"
+        <ListView x:Name="lvExtentions" ItemsSource="{Binding ModelsView}" Grid.Row="1"
                   util:GridViewSort.AutoSort="True">
             <ListView.View>
                 <GridView>

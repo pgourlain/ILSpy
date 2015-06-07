@@ -9,9 +9,9 @@ using System.Windows.Media;
 
 namespace PgoPlugin.DecompilerViewExtensions
 {
-    class SmartTagAdorner : Adorner
+    class SmartTagAdorner<TChild> : Adorner where TChild : FrameworkElement
     {
-        private FrameworkElement _child;
+        private TChild _child;
         public SmartTagAdorner(UIElement adornedElement) : base(adornedElement)
         {
 
@@ -33,7 +33,7 @@ namespace PgoPlugin.DecompilerViewExtensions
             return _child;
         }
 
-        public FrameworkElement Child
+        public TChild Child
         {
             get { return _child; }
             set

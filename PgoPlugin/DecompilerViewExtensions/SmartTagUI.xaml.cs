@@ -11,6 +11,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ICSharpCode.ILSpy.TextView;
+using Mono.Cecil;
 
 namespace PgoPlugin.DecompilerViewExtensions
 {
@@ -19,29 +21,55 @@ namespace PgoPlugin.DecompilerViewExtensions
     /// </summary>
     public partial class SmartTagUI : UserControl
     {
+        public bool ShouldBeStayOpen
+        {
+            get
+            {
+                if (menuPopup.IsOpen)
+                    return true;
+                return false;
+            }
+        }
+
+        public ReferenceSegment Segment { get; internal set; }
+
         public SmartTagUI()
         {
             InitializeComponent();
             this.lightImage.Source = Images.Light;
-            this.comboImage.Source = Images.ComboButton;
+            this.togglePopup.Tag = Images.ComboButton;
             this.MouseEnter += UIElement_MouseEnter;
             this.MouseLeave += UIElement_MouseLeave;
-            this.MouseLeftButtonUp += UIElement_MouseLeftButtonUp;
+            this.menuPopup.Closed += MenuPopup_Closed;
         }
 
-        private void UIElement_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void MenuPopup_Closed(object sender, EventArgs e)
         {
-            MessageBox.Show("comming soon");
+            //hide tooglePopup ?
         }
 
         private void UIElement_MouseLeave(object sender, MouseEventArgs e)
         {
-            this.comboImage.Visibility = Visibility.Collapsed;
+            if (!this.menuPopup.IsOpen)
+            {
+                this.togglePopup.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void UIElement_MouseEnter(object sender, MouseEventArgs e)
         {
-            this.comboImage.Visibility = Visibility.Visible;
+            this.togglePopup.Visibility = Visibility.Visible;
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.Segment == null || (this.Segment!= null && this.Segment.Reference == null))
+            {
+                MessageBox.Show("This text segment doesn't contains any references");
+                return;
+            }
+            SingletonPane<ReferencesView.ReferencesView>.Instance.Show(this.Segment.Reference);
+            this.menuPopup.IsOpen = false;
         }
     }
 }

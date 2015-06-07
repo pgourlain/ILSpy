@@ -19,28 +19,41 @@ namespace PgoPlugin.UIHelper
         {
             var presenter = new TPresenter();
             _presenter = presenter;
+            //this.DataContext = _presenter;
             this.Loaded += new System.Windows.RoutedEventHandler(UserControl_Loaded);
         }
 
         public void Show()
         {
+            Show(null);
+        }
+
+        public void Show(object parameter)
+        {
             if (!IsVisible)
             {
-                switch(this.PaneLocation)
+                switch (this.PaneLocation)
                 {
-                    case PaneLocationEnumeration.Top :
+                    case PaneLocationEnumeration.Top:
                         MainWindow.Instance.ShowInTopPane(WindowTile, this);
+                        this.SetParameter(parameter);
                         break;
-                    case PaneLocationEnumeration.Center :
+                    case PaneLocationEnumeration.Center:
                         System.Windows.MessageBox.Show("not implemented");
                         break;
-                    case PaneLocationEnumeration.Bottom :
+                    case PaneLocationEnumeration.Bottom:
                         MainWindow.Instance.ShowInBottomPane(WindowTile, this);
+                        this.SetParameter(parameter);
                         break;
                 }
             }
+            else SetParameter(parameter);
         }
 
+        protected virtual void SetParameter(object parameter)
+        {
+ 
+        }
 
         protected virtual void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {

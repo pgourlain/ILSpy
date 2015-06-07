@@ -20,11 +20,11 @@ namespace PgoPlugin.DecompilerViewExtensions
     {
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
 
-        SmartTagAdorner adOrner= null;
+        SmartTagAdorner<SmartTagUI> adOrner= null;
         [ImportingConstructor]
         public SmartTagPopup(DecompilerTextView decompilerTextView)
         {
-            adOrner = new SmartTagAdorner(decompilerTextView);
+            adOrner = new SmartTagAdorner<SmartTagUI>(decompilerTextView);
             AdornerLayer.GetAdornerLayer(decompilerTextView).Add(adOrner);
         }
 
@@ -32,14 +32,15 @@ namespace PgoPlugin.DecompilerViewExtensions
         {
             if (dispatcherTimer != null)
                 dispatcherTimer.Stop();
-            var content = GenerateSmartTag(seg);
             if (adOrner != null && adOrner.Child == null)
             {
+                var content = GenerateSmartTag(seg);
                 adOrner.Child = content;
             }
             else
             {
                 adOrner.Child.Visibility = Visibility.Visible;
+                adOrner.Child.Segment = seg;
             }
             var position = mouseArgs.GetPosition(adOrner);
             position.X = 0;
@@ -62,10 +63,21 @@ namespace PgoPlugin.DecompilerViewExtensions
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
             if (dispatcherTimer != null) dispatcherTimer.Stop();
-            if (adOrner != null && adOrner.Child != null) adOrner.Child.Visibility = Visibility.Collapsed;
+            if (adOrner != null && adOrner.Child != null)
+            {
+                //check if smarttag should be close
+                if (!adOrner.Child.ShouldBeStayOpen)
+                {
+                    adOrner.Child.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    dispatcherTimer.Start();
+                }
+            }
         }
 
-        FrameworkElement GenerateSmartTag(ReferenceSegment segment)
+        SmartTagUI GenerateSmartTag(ReferenceSegment segment)
         {
             if (segment != null && segment.Reference is MemberReference)
             {
