@@ -70,11 +70,14 @@
       <DependentUpon>SmartTagUI.xaml</DependentUpon>
     </Compile>
     <Compile Include="Images\Images.cs" />
+    <Compile Include="ReferencesView\IsLinkAlgorithms.cs" />
     <Compile Include="ReferencesView\ReferenceItem.cs" />
+    <Compile Include="ReferencesView\ReferencesEnumerator.cs" />
     <Compile Include="ReferencesView\ReferencesView.xaml.cs">
       <DependentUpon>ReferencesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ReferencesView\ReferencesViewPresenter.cs" />
+    <Compile Include="ReferencesView\ShowReferencesIn.cs" />
     <Compile Include="UIHelper\BaseUserControl.cs" />
     <Compile Include="Bookmarks\AddBookmark.cs" />
     <Compile Include="Bookmarks\BookmarkPresenter.cs" />

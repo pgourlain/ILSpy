@@ -18,28 +18,21 @@
 				<ColumnDefinition />
 				<ColumnDefinition />
 			</Grid.ColumnDefinitions>
-			<controls:SearchBox x:Name="searchBox" DockPanel.Dock="Top" Grid.Column="0" Grid.Row="0" Margin="1"
+            <controls:SearchBox x:Name="searchBox" DockPanel.Dock="Top" Grid.Column="0" Grid.Row="0" Margin="1"
 						PreviewKeyDown="SearchBox_PreviewKeyDown"
 						Text="{Binding SearchTerm}" ToolTip="Search" UpdateDelay="0:0:0.5"
 						WatermarkColor="Gray" WatermarkText="Search" />
-
-			<StackPanel Orientation="Horizontal" Grid.Column="1">
-				<Label Content="Search _for"/>
-				<ComboBox  ItemsSource="{Binding SearchKinds}" Width="130" SelectedItem="{Binding SelectedSearchKind}"/>
-			</StackPanel>
-		</Grid>
+        </Grid>
 		<ListView x:Name="lvExtentions" ItemsSource="{Binding ModelsView}" Grid.Row="1"
 				  util:GridViewSort.AutoSort="True">
 			<ListView.View>
 				<GridView>
 					<GridViewColumn Width="Auto" Header="Assembly" DisplayMemberBinding="{Binding AssemblyName}" 
 									util:GridViewSort.PropertyName="AssemblyName"/>
-					<!--<GridViewColumn Header="ExtendedType" Width="Auto" DisplayMemberBinding="{Binding ExtendedType}"
-									util:GridViewSort.PropertyName="ExtendedType"/>
-					<GridViewColumn Header="FullDefinition" Width="Auto" DisplayMemberBinding="{Binding FullDefinition}"
-									util:GridViewSort.PropertyName="FullDefinition"/>
-					<GridViewColumn Width="Auto" Header="Return" DisplayMemberBinding="{Binding ReturnType}" 
-									util:GridViewSort.PropertyName="ReturnType"/>-->
+					<GridViewColumn Header="TypeFullName" Width="Auto" DisplayMemberBinding="{Binding TypeFullName}"
+									util:GridViewSort.PropertyName="TypeFullName"/>
+					<GridViewColumn Width="Auto" Header="MethodName" DisplayMemberBinding="{Binding MethodName}" 
+									util:GridViewSort.PropertyName="MethodName"/>
 				</GridView>
 			</ListView.View>
 			<ListView.GroupStyle>
@@ -47,7 +40,7 @@
 					<GroupStyle.HeaderTemplate>
 						<DataTemplate>
 							<TextBlock FontWeight="Bold" FontSize="15"
-						 Text="{Binding Path=ExtendedType}"/>
+						 Text="{Binding Path=AssemblyName}"/>
 						</DataTemplate>
 					</GroupStyle.HeaderTemplate>
 				</GroupStyle>

@@ -66,9 +66,14 @@ namespace PgoPlugin.DecompilerViewExtensions
             if (this.Segment == null || (this.Segment!= null && this.Segment.Reference == null))
             {
                 MessageBox.Show("This text segment doesn't contains any references");
+                this.menuPopup.IsOpen = false;
                 return;
             }
-            SingletonPane<ReferencesView.ReferencesView>.Instance.Show(this.Segment.Reference);
+            var menuItem = sender as MenuItem;
+            if (menuItem != null)
+            {
+                SingletonPane<ReferencesView.ReferencesView>.Instance.Show(new KeyValuePair<string, object>(menuItem.Tag.ToString(), this.Segment.Reference));
+            }
             this.menuPopup.IsOpen = false;
         }
     }

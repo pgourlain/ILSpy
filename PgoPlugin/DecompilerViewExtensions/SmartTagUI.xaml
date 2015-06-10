@@ -22,7 +22,7 @@
             </StackPanel>
             <Popup x:Name="menuPopup"  IsOpen="{Binding IsChecked, ElementName=togglePopup}" StaysOpen="False">
                 <StackPanel Orientation="Vertical" Background="AliceBlue">
-                    <MenuItem Header="Find references" Click="MenuItem_Click"/>
+                    <MenuItem Header="Find references" Click="MenuItem_Click" Tag="InputReferences"/>
                     <!--<MenuItem Header="tagada"/>
                     <MenuItem Header="coucouc coucou"/>
                     <MenuItem Header="ladfkd qsd:kf"/>-->

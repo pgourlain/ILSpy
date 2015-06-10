@@ -43,7 +43,8 @@ namespace PgoPlugin.ReferencesView
 
         protected override void SetParameter(object parameter)
         {
-            this.Presenter.UpdateReferences(parameter as MemberReference);
+            var kp = (KeyValuePair<string, object>)parameter;
+            this.Presenter.UpdateReferences(kp.Key, kp.Value as MemberReference);
         }
 
         void SearchBox_PreviewKeyDown(object sender, KeyEventArgs e)
