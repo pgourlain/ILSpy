@@ -12,11 +12,28 @@ namespace PgoPlugin.ReferencesView
 
         public IEnumerable<ReferenceItem> OutputReferenceOf(MemberReference current)
         {
-            return null;
+            return OutputReferenceOf(current, false);
         }
         public IEnumerable<ReferenceItem> OutputReferenceOf(MemberReference current, bool inSameAssembly)
         {
-            return null;
+            List<ReferenceItem> l = new List<ReferenceItem>();
+            IIsLinkResolver linkResolver = null;
+            if (current is TypeDefinition)
+            {
+                linkResolver = new IsLinkOutOfthisType((TypeDefinition)current, inSameAssembly);
+                //var types = current.Module.Types.Where(x => x.MetadataToken != current.MetadataToken);
+                DoProcessTypes(new TypeDefinition[] { (TypeDefinition)current }, linkResolver, l);
+            }
+            else if (current is MethodDefinition)
+            {
+                linkResolver = new IsLinkOutOfthisType(((MethodDefinition)current).DeclaringType, inSameAssembly);
+                DoProcessMethod((MethodDefinition)current, linkResolver, l);
+            }
+            else
+            {
+                l.Add(new ReferenceItem("not yet implement for this type"));
+            }
+            return l.Distinct(new ReferenceItemComparer());
         }
 
         public IEnumerable<ReferenceItem> InputReferenceOf(TypeDefinition current, IEnumerable<AssemblyDefinition> assemblies)
@@ -42,15 +59,17 @@ namespace PgoPlugin.ReferencesView
             {
                 //base Type
                 if (linkResolver.IsLink(type.BaseType))
-                {
-                    l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                {                    
+                    //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                    l.Add(linkResolver.CreateLink(type, type.BaseType));
                 }
                 //attributes
                 if (type.HasCustomAttributes)
                 {
                     foreach (var item in type.CustomAttributes.Where(linkResolver.IsLink))
                     {
-                        l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                        //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                        l.Add(linkResolver.CreateLink(type, item));
                     }
                 }
                 //
@@ -58,7 +77,8 @@ namespace PgoPlugin.ReferencesView
                 {
                     foreach (var item in type.GenericParameters.Where(linkResolver.IsLink))
                     {
-                        l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                        //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                        l.Add(linkResolver.CreateLink(type, item));
                     }
                 }
 
@@ -66,7 +86,8 @@ namespace PgoPlugin.ReferencesView
                 {
                     foreach (var item in type.Interfaces.Where(linkResolver.IsLink))
                     {
-                        l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                        //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
+                        l.Add(linkResolver.CreateLink(type, item));
                     }
                 }
 
@@ -97,11 +118,19 @@ namespace PgoPlugin.ReferencesView
         {
             if (method != null)
             {
+                if (method.ReturnType != null)
+                {
+                    if (linkResolver.IsLink(method.ReturnType))
+                    {
+                        l.Add(linkResolver.CreateLink(method, method.ReturnType));
+                    }
+                }
                 if (method.HasCustomAttributes)
                 {
                     foreach (var item in method.CustomAttributes.Where(linkResolver.IsLink))
                     {
-                        l.Add(new ReferenceItem(method.Module.Assembly.FullName, method.DeclaringType.FullName, method));
+                        //l.Add(new ReferenceItem(method.Module.Assembly.FullName, method.DeclaringType.FullName, method));
+                        l.Add(linkResolver.CreateLink(method, item));
                     }
                 }
                 if (method.HasGenericParameters)
@@ -119,16 +148,17 @@ namespace PgoPlugin.ReferencesView
             {
                 foreach (var item in body.Variables.Where(x => linkResolver.IsLink(x.VariableType)))
                 {
-                    //report.Report(string.Format("{0}.{1} via variable in method", method.DeclaringType.FullName, method.Name));
-                    //report.Report(TypeLink.CreateLinkViaTypeReference(method.DeclaringType, item.VariableType));
+                    l.Add(linkResolver.CreateLink(method, item.VariableType));
                 }
             }
             if (body.HasExceptionHandlers)
             {
                 foreach (var item in body.ExceptionHandlers.Where(x => linkResolver.IsLink(x.CatchType)))
                 {
-                    //report.Report(string.Format("{0}.{1} via exception in method", method.DeclaringType.FullName, method.Name));
-                    //report.Report(TypeLink.CreateLinkViaTypeReference(method.DeclaringType, item.CatchType));
+                    if (item.HandlerType == ExceptionHandlerType.Catch)
+                    {
+                        l.Add(linkResolver.CreateLink(method, item.CatchType));
+                    }
                 }
             }
 
@@ -142,7 +172,7 @@ namespace PgoPlugin.ReferencesView
                         MethodReference mr = instruction.Operand as MethodReference;
                         if (mr != null && linkResolver.IsLink(mr))
                         {
-                            l.Add(new ReferenceItem(method.Module.Assembly.FullName, method.DeclaringType.FullName, method));
+                            l.Add(linkResolver.CreateLink(method, mr));
                         }
                         break;
                 }
@@ -155,14 +185,13 @@ namespace PgoPlugin.ReferencesView
             {
                 if (linkResolver.IsLink(parameter.ParameterType))
                 {
-                    //report.Report(TypeLink.CreateLinkViaTypeReference(method.DeclaringType, parameter.ParameterType));
+                    l.Add(linkResolver.CreateLink(method, parameter.ParameterType));
                 }
                 if (parameter.HasCustomAttributes)
                 {
                     foreach (var item in parameter.CustomAttributes.Where(linkResolver.IsLink))
                     {
-                        //report.Report(string.Format("{0}.{1} via attribute on parameter method", method.DeclaringType.FullName, method.Name));
-                        //report.Report(TypeLink.CreateLinkViaTypeReference(method.DeclaringType, item.AttributeType));
+                        l.Add(linkResolver.CreateLink(method, item));
                     }
                 }
             }

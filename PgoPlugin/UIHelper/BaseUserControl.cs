@@ -28,7 +28,7 @@ namespace PgoPlugin.UIHelper
             Show(null);
         }
 
-        public void Show(object parameter)
+        public void Show(params object[] parameter)
         {
             if (!IsVisible)
             {
@@ -36,21 +36,21 @@ namespace PgoPlugin.UIHelper
                 {
                     case PaneLocationEnumeration.Top:
                         MainWindow.Instance.ShowInTopPane(WindowTile, this);
-                        this.SetParameter(parameter);
+                        this.SetParameters(parameter);
                         break;
                     case PaneLocationEnumeration.Center:
                         System.Windows.MessageBox.Show("not implemented");
                         break;
                     case PaneLocationEnumeration.Bottom:
                         MainWindow.Instance.ShowInBottomPane(WindowTile, this);
-                        this.SetParameter(parameter);
+                        this.SetParameters(parameter);
                         break;
                 }
             }
-            else SetParameter(parameter);
+            else SetParameters(parameter);
         }
 
-        protected virtual void SetParameter(object parameter)
+        protected virtual void SetParameters(object[] args)
         {
  
         }

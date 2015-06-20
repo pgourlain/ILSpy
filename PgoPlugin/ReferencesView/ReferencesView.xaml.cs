@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows.Input;
 using Mono.Cecil;
 using PgoPlugin.UIHelper;
 
@@ -37,14 +25,13 @@ namespace PgoPlugin.ReferencesView
         {
             get
             {
-                return "References";
+                return "References (beta)";
             }
         }
 
-        protected override void SetParameter(object parameter)
+        protected override void SetParameters(object[] args)
         {
-            var kp = (KeyValuePair<string, object>)parameter;
-            this.Presenter.UpdateReferences(kp.Key, kp.Value as MemberReference);
+            this.Presenter.UpdateReferences(args[0].ToString(), args[1] as MemberReference);
         }
 
         void SearchBox_PreviewKeyDown(object sender, KeyEventArgs e)

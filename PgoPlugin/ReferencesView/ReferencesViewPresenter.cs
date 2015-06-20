@@ -38,20 +38,32 @@ namespace PgoPlugin.ReferencesView
         MemberReference _memberReference;
         internal void UpdateReferences(string command, MemberReference memberReference)
         {
-            _targetAssembly = memberReference.Module.Assembly;
+            if (memberReference != null)
+                _targetAssembly = memberReference.Module.Assembly;
             _memberReference = memberReference;
-            RunAsync(() => FindReferences());
+            RunAsync(() => FindReferences(command));
         }
 
 
-        IEnumerable<ReferenceItem> FindReferences()
+        IEnumerable<ReferenceItem> FindReferences(string command)
         {
             var assemblies = MainWindow.Instance.CurrentAssemblyList.GetAssemblies();
             var typeDef = _memberReference as TypeDefinition;
-            if (typeDef != null)
+            var refEnumerator = new ReferencesEnumerator();
+            switch (command)
             {
-                return new ReferencesEnumerator().InputReferenceOf(typeDef, assemblies.Select(x => x.AssemblyDefinition));
+                case "OutputReferences":
+                    return refEnumerator.OutputReferenceOf(_memberReference);
+                case "OutputReferencesInSameAssembly":
+                    return refEnumerator.OutputReferenceOf(_memberReference, true);
+                default:
+                    if (typeDef != null)
+                    {
+                        return refEnumerator.InputReferenceOf(typeDef, assemblies.Select(x => x.AssemblyDefinition));
+                    }
+                break;
             }
+                
             return new ReferenceItem[] { new ReferenceItem("not yet implemented") };
         }
     }

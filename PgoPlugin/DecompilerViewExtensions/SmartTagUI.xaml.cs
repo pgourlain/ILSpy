@@ -72,7 +72,7 @@ namespace PgoPlugin.DecompilerViewExtensions
             var menuItem = sender as MenuItem;
             if (menuItem != null)
             {
-                SingletonPane<ReferencesView.ReferencesView>.Instance.Show(new KeyValuePair<string, object>(menuItem.Tag.ToString(), this.Segment.Reference));
+                SingletonPane<ReferencesView.ReferencesView>.Instance.Show(menuItem.Tag.ToString(), this.Segment.Reference);
             }
             this.menuPopup.IsOpen = false;
         }
