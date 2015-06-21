@@ -22,9 +22,10 @@ namespace PgoPlugin.ReferencesView
         bool IsLink(MethodReference current);
         ReferenceItem CreateLink(TypeDefinition type, TypeReference linkedTo);
         ReferenceItem CreateLink(TypeDefinition type, CustomAttribute item);
-        ReferenceItem CreateLink(MethodDefinition method, CustomAttribute item);
+        ReferenceItem CreateLink(MemberReference method, CustomAttribute item);
         ReferenceItem CreateLink(MethodDefinition method, MethodReference mr);
-        ReferenceItem CreateLink(MethodDefinition method, TypeReference returnType);
+        ReferenceItem CreateLink(MemberReference method, TypeReference returnType);
+        ReferenceItem CreateLink(PropertyDefinition property, TypeReference propertyType);
     }
 
     class IsLinkToAssembly : IIsLinkResolver
@@ -65,6 +66,8 @@ namespace PgoPlugin.ReferencesView
 
         public virtual bool IsLink(IMetadataScope current)
         {
+            var md = (current as ModuleDefinition);
+            if (md != null) return md.Assembly.Name.Name == _targetAssembly.Name.Name;
             return current.Name == _targetAssembly.Name.Name;
         }
 
@@ -91,18 +94,23 @@ namespace PgoPlugin.ReferencesView
         {
             return new ReferenceItem(type.Module.Assembly.FullName, type.FullName);
         }
-        public virtual ReferenceItem CreateLink(MethodDefinition method, CustomAttribute linkedTo)
+        public virtual ReferenceItem CreateLink(MemberReference method, CustomAttribute linkedTo)
         {
-            return new ReferenceItem(method.DeclaringType.Module.Assembly.FullName, method.DeclaringType.FullName, method);
+            return new ReferenceItem(method.DeclaringType.Module.Assembly.FullName, method.DeclaringType.FullName, method as MethodReference);
         }
         public virtual ReferenceItem CreateLink(MethodDefinition method, MethodReference linkedTo)
         {
             return new ReferenceItem(method.DeclaringType.Module.Assembly.FullName, method.DeclaringType.FullName, method);
         }
-        public virtual ReferenceItem CreateLink(MethodDefinition method, TypeReference linkedTo)
+        public virtual ReferenceItem CreateLink(MemberReference method, TypeReference linkedTo)
         {
-            return new ReferenceItem(method.DeclaringType.Module.Assembly.FullName, method.DeclaringType.FullName, method);
+            return new ReferenceItem(method.DeclaringType.Module.Assembly.FullName, method.DeclaringType.FullName, method as MethodReference);
         }
+        public virtual ReferenceItem CreateLink(PropertyDefinition property, TypeReference propertyType)
+        {
+            return new ReferenceItem(property.DeclaringType.Module.Assembly.FullName, property.DeclaringType.FullName);
+        }
+
         #endregion
     }
 
@@ -139,8 +147,7 @@ namespace PgoPlugin.ReferencesView
             {
                 result = result & base.IsLink(current);
             }
-
-            return result && current.FullName != _targetType.FullName;
+            return result && getTypeFulName(current) != _targetType.FullName;
         }
 
         public override bool IsLink(MethodReference current)
@@ -155,16 +162,37 @@ namespace PgoPlugin.ReferencesView
         #region CreateLinks
         public override ReferenceItem CreateLink(TypeDefinition type, TypeReference linkedTo)
         {
-            return new ReferenceItem(getAssemblyName(linkedTo.Scope), linkedTo.FullName);
+            return new ReferenceItem(getAssemblyName(linkedTo.Scope), getTypeFulName(linkedTo));
         }
+
+        /// <summary>
+        /// retourne le type d'une reference qui peut être un tableau de tableau de tableau
+        /// </summary>
+        /// <param name="linkedTo"></param>
+        /// <returns></returns>
+        private string getTypeFulName(TypeReference linkedTo)
+        {
+            if (linkedTo.IsArray)
+            {
+                return getTypeFulName(((ArrayType)linkedTo).ElementType);
+            }
+            else
+                return linkedTo.FullName;
+        }
+
         public override ReferenceItem CreateLink(MethodDefinition method, MethodReference linkedTo)
         {
             return new ReferenceItem(getAssemblyName(linkedTo.DeclaringType.Scope), linkedTo.DeclaringType.FullName, linkedTo);
         }
-        public override ReferenceItem CreateLink(MethodDefinition method, TypeReference linkedTo)
+        public override ReferenceItem CreateLink(MemberReference method, TypeReference linkedTo)
         {
-            return new ReferenceItem(getAssemblyName(linkedTo.Scope), linkedTo.FullName);
+            return new ReferenceItem(getAssemblyName(linkedTo.Scope), getTypeFulName(linkedTo));
         }
+        public override ReferenceItem CreateLink(PropertyDefinition property, TypeReference linkedTo)
+        {
+            return new ReferenceItem(getAssemblyName(linkedTo.Scope), getTypeFulName(linkedTo));
+        }
+
         #endregion
     }
 

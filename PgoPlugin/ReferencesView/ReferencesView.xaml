@@ -22,6 +22,9 @@
 						PreviewKeyDown="SearchBox_PreviewKeyDown"
 						Text="{Binding SearchTerm}" ToolTip="Search" UpdateDelay="0:0:0.5"
 						WatermarkColor="Gray" WatermarkText="Search" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button  Content="view graph" Click="graph_Click"/>
+            </StackPanel>            
         </Grid>
 		<ListView x:Name="lvExtentions" ItemsSource="{Binding ModelsView}" Grid.Row="1"
 				  util:GridViewSort.AutoSort="True">
@@ -46,8 +49,10 @@
 				</GroupStyle>
 			</ListView.GroupStyle>
 		</ListView>
+        
 		<Border Grid.Row="0" Grid.RowSpan="2" Background="AliceBlue" Visibility="{Binding Loading}">
 			<TextBlock TextAlignment="Center" Text="Loading...." VerticalAlignment="Center" FontSize="36"/>
 		</Border>
+        
 	</Grid>
 </local:ReferencesViewBase>

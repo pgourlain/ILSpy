@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 
 namespace PgoPlugin.ReferencesView
 {
@@ -60,7 +61,6 @@ namespace PgoPlugin.ReferencesView
                 //base Type
                 if (linkResolver.IsLink(type.BaseType))
                 {                    
-                    //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
                     l.Add(linkResolver.CreateLink(type, type.BaseType));
                 }
                 //attributes
@@ -68,7 +68,6 @@ namespace PgoPlugin.ReferencesView
                 {
                     foreach (var item in type.CustomAttributes.Where(linkResolver.IsLink))
                     {
-                        //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
                         l.Add(linkResolver.CreateLink(type, item));
                     }
                 }
@@ -77,7 +76,6 @@ namespace PgoPlugin.ReferencesView
                 {
                     foreach (var item in type.GenericParameters.Where(linkResolver.IsLink))
                     {
-                        //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
                         l.Add(linkResolver.CreateLink(type, item));
                     }
                 }
@@ -86,24 +84,59 @@ namespace PgoPlugin.ReferencesView
                 {
                     foreach (var item in type.Interfaces.Where(linkResolver.IsLink))
                     {
-                        //l.Add(new ReferenceItem(type.Module.Assembly.FullName, type.FullName));
                         l.Add(linkResolver.CreateLink(type, item));
                     }
                 }
 
-                //if (type.HasProperties) DoProcessProperties(type, type.Properties, report);
+                if (type.HasProperties) DoProcessProperties(type, type.Properties, linkResolver, l);
 
-                //if (type.HasEvents) DoProcessEvents(type, type.Events, report);
+                if (type.HasEvents) DoProcessEvents(type, type.Events, linkResolver, l);
 
-                //if (type.HasFields) DoProcessFields(type, type.Fields, report);
+                if (type.HasFields) DoProcessFields(type, type.Fields, linkResolver, l);
                 if (type.HasMethods) DoProcessMethods(type, type.Methods, linkResolver, l);
-
-                //if (type.HasNestedTypes)
-                //{
-                //    DoProcessTypes(type.NestedTypes, report);
-                //}
             }
 
+        }
+
+        private void DoProcessEvents(TypeDefinition type, IEnumerable<EventDefinition> events, IIsLinkResolver linkResolver, List<ReferenceItem> l)
+        {
+            foreach (var ev in events)
+            {
+                DoProcessEvent(ev, linkResolver, l);
+            }
+        }
+
+        private void DoProcessEvent(EventDefinition ev, IIsLinkResolver linkResolver, List<ReferenceItem> l)
+        {
+            if (linkResolver.IsLink(ev.EventType))
+            {
+                l.Add(linkResolver.CreateLink(ev, ev.EventType));
+            }
+            DoProcessCustomAttributes(ev, ev, linkResolver, l);
+        }
+
+        private void DoProcessFields(TypeDefinition type, IEnumerable<FieldDefinition> fields, IIsLinkResolver linkResolver, List<ReferenceItem> l)
+        {
+            foreach (var field in fields)
+            {
+                DoProcessField(field, linkResolver, l);
+            }
+        }
+
+        private void DoProcessField(FieldDefinition field, IIsLinkResolver linkResolver, List<ReferenceItem> l)
+        {
+            if (linkResolver.IsLink(field.FieldType))
+            {
+                l.Add(linkResolver.CreateLink(field, field.FieldType));
+            }
+        }
+
+        private void DoProcessProperties(TypeDefinition type, IEnumerable<PropertyDefinition> properties, IIsLinkResolver linkResolver, List<ReferenceItem> l)
+        {
+            foreach (var prop in properties)
+            {
+                DoProcessProperty(prop, linkResolver, l);
+            }
         }
 
         private void DoProcessMethods(TypeDefinition type, IEnumerable<MethodDefinition> methods, IIsLinkResolver linkResolver, List<ReferenceItem> l)
@@ -111,6 +144,32 @@ namespace PgoPlugin.ReferencesView
             foreach (var method in methods)
             {
                 DoProcessMethod(method, linkResolver, l);
+            }
+        }
+
+        private void DoProcessProperty(PropertyDefinition property, IIsLinkResolver linkResolver, List<ReferenceItem> l)
+        {
+            if (property != null)
+            {
+                if (linkResolver.IsLink(property.PropertyType))
+                {
+                    l.Add(linkResolver.CreateLink(property, property.PropertyType));
+                }
+                DoProcessCustomAttributes(property, property, linkResolver, l);
+            }
+        }
+
+        private void DoProcessCustomAttributes(MemberReference source, ICustomAttributeProvider customAttributeProvider, IIsLinkResolver linkResolver, List<ReferenceItem> l)
+        {
+            if (customAttributeProvider != null)
+            {
+                if (customAttributeProvider.HasCustomAttributes)
+                {
+                    foreach (var item in customAttributeProvider.CustomAttributes.Where(linkResolver.IsLink))
+                    {
+                        l.Add(linkResolver.CreateLink(source, item));
+                    }
+                }
             }
         }
 
@@ -125,14 +184,7 @@ namespace PgoPlugin.ReferencesView
                         l.Add(linkResolver.CreateLink(method, method.ReturnType));
                     }
                 }
-                if (method.HasCustomAttributes)
-                {
-                    foreach (var item in method.CustomAttributes.Where(linkResolver.IsLink))
-                    {
-                        //l.Add(new ReferenceItem(method.Module.Assembly.FullName, method.DeclaringType.FullName, method));
-                        l.Add(linkResolver.CreateLink(method, item));
-                    }
-                }
+                DoProcessCustomAttributes(method, method, linkResolver, l);
                 if (method.HasGenericParameters)
                 {
                     //Report(method.DeclaringType, method.GenericParameters.Where(IsLink), report);

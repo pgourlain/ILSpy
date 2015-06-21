@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Windows;
+using System.Windows.Input;
 using Mono.Cecil;
 using PgoPlugin.UIHelper;
 
@@ -42,6 +43,11 @@ namespace PgoPlugin.ReferencesView
                 lvExtentions.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
                 lvExtentions.SelectedIndex = 0;
             }
+        }
+
+        private void graph_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            MessageBox.Show("not yet implemented, it will be a .dgml graph");
         }
     }
 }
