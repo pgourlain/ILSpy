@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using ICSharpCode.ILSpy;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -65,6 +68,54 @@ namespace PgoPlugin.ReferencesView
             }
                 
             return new ReferenceItem[] { new ReferenceItem("not yet implemented") };
+        }
+
+        XName name(string name)
+        {
+            return XName.Get(name, "http://schemas.microsoft.com/vs/2009/dgml");
+        }
+
+        XElement node(string nodeName)
+        {
+            return new XElement(name("Node"),
+                new XAttribute("Id", nodeName),
+                new XAttribute("Label", nodeName)
+                );
+        }
+
+        XElement link(string source, string target)
+        {
+            return new XElement(name("Link"),
+                new XAttribute("Source", source),
+                new XAttribute("Target", target)
+                );
+        }
+
+        internal XDocument CreateDgml()
+        {
+            //this.Models
+            XDocument document = new XDocument();
+            var n = name("DirectedGraph");
+            var nodes = new XElement(name("Nodes"));
+            var links = new XElement(name("Links"));
+            var properties = new XElement(name("Properties"));
+            document.Add(new XElement(n, nodes, links, properties));
+            nodes.Add(node(_memberReference.Name));
+
+            foreach (var item in this.Models.GroupBy(x => x.TypeFullName))
+            {
+                var newNode = node(item.Key);
+                nodes.Add(newNode);
+                links.Add(link(_memberReference.Name, item.Key));
+                foreach (var grp in item)
+                {
+                }
+                //item.
+            }
+
+            properties.Add(new XElement("Property", new XAttribute("Label", "Label"),
+                new XAttribute("DataType", "String")));
+            return document;
         }
     }
 }

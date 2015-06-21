@@ -23,7 +23,7 @@
 						Text="{Binding SearchTerm}" ToolTip="Search" UpdateDelay="0:0:0.5"
 						WatermarkColor="Gray" WatermarkText="Search" />
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button  Content="view graph" Click="graph_Click"/>
+                <Button  Content="save as graph" Click="graph_Click"/>
             </StackPanel>            
         </Grid>
 		<ListView x:Name="lvExtentions" ItemsSource="{Binding ModelsView}" Grid.Row="1"

@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Input;
+using Microsoft.Win32;
 using Mono.Cecil;
 using PgoPlugin.UIHelper;
 
@@ -47,7 +48,14 @@ namespace PgoPlugin.ReferencesView
 
         private void graph_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            MessageBox.Show("not yet implemented, it will be a .dgml graph");
+            var document = this.Presenter.CreateDgml();
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.DefaultExt = ".dgml";
+            sfd.Filter = "Dgml Documents (*.dgml)|*.dgml";
+            if (sfd.ShowDialog() == true)
+            {
+                document.Save(sfd.FileName);
+            }
         }
     }
 }
