@@ -16,10 +16,11 @@ namespace PgoPlugin.ReferencesView
 {
     public class ReferencesViewPresenter : FilteredPresenter<ReferenceItem>
     {
+        string _lastAction;
         TaskCompletionSource<IEnumerable<ReferenceItem>> _currentRun;
         public ReferencesViewPresenter()
         {
-
+            _lastAction = string.Empty;
         }
 
         protected internal override void ViewClose()
@@ -53,6 +54,7 @@ namespace PgoPlugin.ReferencesView
             var assemblies = MainWindow.Instance.CurrentAssemblyList.GetAssemblies();
             var typeDef = _memberReference as TypeDefinition;
             var refEnumerator = new ReferencesEnumerator();
+            _lastAction = command;
             switch (command)
             {
                 case "OutputReferences":
@@ -75,11 +77,14 @@ namespace PgoPlugin.ReferencesView
             return XName.Get(name, "http://schemas.microsoft.com/vs/2009/dgml");
         }
 
-        XElement node(string nodeName)
+        XElement node(string nodeName, string nodeLabel = "", string description ="")
         {
+            if (string.IsNullOrEmpty(nodeLabel))
+                nodeLabel = nodeName;
             return new XElement(name("Node"),
                 new XAttribute("Id", nodeName),
-                new XAttribute("Label", nodeName)
+                new XAttribute("Label", nodeLabel),
+                new XAttribute("Description", description ?? "")
                 );
         }
 
@@ -99,22 +104,60 @@ namespace PgoPlugin.ReferencesView
             var nodes = new XElement(name("Nodes"));
             var links = new XElement(name("Links"));
             var properties = new XElement(name("Properties"));
-            document.Add(new XElement(n, nodes, links, properties));
-            nodes.Add(node(_memberReference.Name));
+            var categories = new XElement(name("Categories"));
+            document.Add(new XElement(n, nodes, links, categories, properties));
+            string centerNodeName = _memberReference.FullName;
+            nodes.Add(node(centerNodeName));
+
+            var outputRef = _lastAction.StartsWith("Output");
+
 
             foreach (var item in this.Models.GroupBy(x => x.TypeFullName))
             {
                 var newNode = node(item.Key);
+                newNode.Add(new XAttribute("Group", "Expanded"));
                 nodes.Add(newNode);
-                links.Add(link(_memberReference.Name, item.Key));
+
                 foreach (var grp in item)
                 {
+                    string methodName = grp.Method != null ? grp.Method.Name : grp.TypeFullName;
+                    string nKey = item.Key + "_" + methodName;
+                    nKey = nKey.Replace(' ', '_');
+                    newNode = node(nKey, methodName, grp.MethodName);
+                    nodes.Add(newNode);
+                    var l = link(item.Key, nKey);
+                    l.Add(new XAttribute("Category", "Contains"));
+                    links.Add(l);
+                    if (outputRef)
+                    {
+                        links.Add(link(centerNodeName, nKey));
+                    }
+                    else
+                    {
+                        links.Add(link(nKey, centerNodeName));
+                    }
                 }
-                //item.
             }
 
-            properties.Add(new XElement("Property", new XAttribute("Label", "Label"),
+            categories.Add(new XElement("Category", new XAttribute("Id", "Contains"),
+                new XAttribute("Label", "Contains"),
+                new XAttribute("CanBeDataDriven", "False"),
+                new XAttribute("CanLinkedNodesBeDataDriven", "True"),
+                new XAttribute("IsContainment", "True")));
+            properties.Add(new XElement("Property", new XAttribute("Id", "Group"),
+                new XAttribute("Label", "Label"),
                 new XAttribute("DataType", "String")));
+            properties.Add(new XElement("Property", new XAttribute("Id", "Group"),
+                new XAttribute("Label", "Group"),
+                new XAttribute("DataType", "Microsoft.VisualStudio.GraphModel.GraphGroupStyle")));
+            properties.Add(new XElement("Property", new XAttribute("Id", "CanBeDataDriven"),
+                new XAttribute("Label", "CanBeDataDriven"),
+                new XAttribute("DataType", "Boolean")));
+            properties.Add(new XElement("Property", new XAttribute("Id", "CanLinkedNodesBeDataDriven"),
+                new XAttribute("Label", "CanLinkedNodesBeDataDriven"),
+                new XAttribute("DataType", "Boolean")));
+            properties.Add(new XElement("Property", new XAttribute("Id", "IsContainment"),
+                new XAttribute("DataType", "Boolean")));
             return document;
         }
     }

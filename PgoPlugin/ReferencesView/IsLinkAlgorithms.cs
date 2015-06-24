@@ -126,6 +126,11 @@ namespace PgoPlugin.ReferencesView
         {
             return base.IsLink(current) && current.FullName == _targetType.FullName;
         }
+
+        public override bool IsLink(MethodReference current)
+        {
+            return base.IsLink(current) && current.DeclaringType.FullName == _targetType.FullName;
+        }
     }
 
     /// <summary>
