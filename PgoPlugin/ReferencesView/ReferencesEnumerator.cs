@@ -37,10 +37,10 @@ namespace PgoPlugin.ReferencesView
             return l.Distinct(new ReferenceItemComparer());
         }
 
-        public IEnumerable<ReferenceItem> InputReferenceOf(TypeDefinition current, IEnumerable<AssemblyDefinition> assemblies)
+        public IEnumerable<ReferenceItem> InputReferenceOf(MemberReference current, IEnumerable<AssemblyDefinition> assemblies)
         {
             List<ReferenceItem> l = new List<ReferenceItem>();
-            var linkResolver = new IsLinkToType(current);
+            var linkResolver = new IsLinkToMemberReference(current);
             //retrait de la selection le type en cours
             var types = assemblies.SelectMany(x => x.Modules).SelectMany(x => x.Types)
                 .Where(x => x.MetadataToken != current.MetadataToken);

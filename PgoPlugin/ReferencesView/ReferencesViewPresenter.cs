@@ -62,11 +62,7 @@ namespace PgoPlugin.ReferencesView
                 case "OutputReferencesInSameAssembly":
                     return refEnumerator.OutputReferenceOf(_memberReference, true);
                 default:
-                    if (typeDef != null)
-                    {
-                        return refEnumerator.InputReferenceOf(typeDef, assemblies.Select(x => x.AssemblyDefinition));
-                    }
-                break;
+                    return refEnumerator.InputReferenceOf(_memberReference, assemblies.Select(x => x.AssemblyDefinition));
             }
                 
             return new ReferenceItem[] { new ReferenceItem("not yet implemented") };

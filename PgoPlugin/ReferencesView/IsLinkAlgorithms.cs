@@ -133,6 +133,7 @@ namespace PgoPlugin.ReferencesView
         }
     }
 
+
     /// <summary>
     /// in order to check that a link exist in assembly X.Assembly and not to type X
     /// </summary>
@@ -201,8 +202,37 @@ namespace PgoPlugin.ReferencesView
         #endregion
     }
 
-    class IsLinkToMemberReference
+    class IsLinkToMemberReference : IsLinkToAssembly
     {
+        MemberReference _target;
+        public IsLinkToMemberReference(MemberReference target) : base (target.Module.Assembly)
+        {
+            _target = target;
+        }
 
+        public override bool IsLink(TypeReference current)
+        {
+            var t = _target as TypeReference;
+            if (t != null)
+            {
+                return base.IsLink(current) && t.FullName == current.FullName;
+            }
+            return false;
+        }
+
+        public override bool IsLink(CustomAttribute current)
+        {
+            return false;
+        }
+
+        public override bool IsLink(MethodReference current)
+        {
+            var m = _target as MethodReference;
+            if (m != null)
+            {
+                return base.IsLink(current) && current.FullName == _target.FullName;
+            }
+            return false;
+        }
     }
 }
