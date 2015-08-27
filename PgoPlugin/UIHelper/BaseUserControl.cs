@@ -28,26 +28,46 @@ namespace PgoPlugin.UIHelper
             Show(null);
         }
 
-        public void Show(params object[] parameter)
+        public void Show(params object[] parameters)
         {
-            if (!IsVisible)
+            switch (this.PaneLocation)
             {
-                switch (this.PaneLocation)
-                {
-                    case PaneLocationEnumeration.Top:
-                        MainWindow.Instance.ShowInTopPane(WindowTile, this);
-                        this.SetParameters(parameter);
-                        break;
-                    case PaneLocationEnumeration.Center:
-                        System.Windows.MessageBox.Show("not implemented");
-                        break;
-                    case PaneLocationEnumeration.Bottom:
-                        MainWindow.Instance.ShowInBottomPane(WindowTile, this);
-                        this.SetParameters(parameter);
-                        break;
-                }
+                case PaneLocationEnumeration.Top:
+                    MainWindow.Instance.ShowInTopPane(GetWindowTitle(parameters), this);
+                    this.SetParameters(parameters);
+                    break;
+                case PaneLocationEnumeration.Center:
+                    System.Windows.MessageBox.Show("not implemented");
+                    break;
+                case PaneLocationEnumeration.Bottom:
+                    MainWindow.Instance.ShowInBottomPane(GetWindowTitle(parameters), this);
+                    this.SetParameters(parameters);
+                    break;
             }
-            else SetParameters(parameter);
+
+            //if (!IsVisible)
+            //{
+            //    switch (this.PaneLocation)
+            //    {
+            //        case PaneLocationEnumeration.Top:
+            //            MainWindow.Instance.ShowInTopPane(GetWindowTitle(parameters), this);
+            //            this.SetParameters(parameters);
+            //            break;
+            //        case PaneLocationEnumeration.Center:
+            //            System.Windows.MessageBox.Show("not implemented");
+            //            break;
+            //        case PaneLocationEnumeration.Bottom:
+            //            MainWindow.Instance.ShowInBottomPane(GetWindowTitle(parameters), this);
+            //            this.SetParameters(parameters);
+            //            break;
+            //    }
+            //}
+            //else SetParameters(parameters);
+        }
+
+        protected virtual string GetWindowTitle(object[] parameter)
+        {
+            return WindowTile;
         }
 
         protected virtual void SetParameters(object[] args)

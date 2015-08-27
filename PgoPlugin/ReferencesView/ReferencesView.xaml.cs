@@ -31,6 +31,19 @@ namespace PgoPlugin.ReferencesView
             }
         }
 
+        protected override string GetWindowTitle(object[] parameters)
+        {
+            if (parameters != null)
+            {
+                var mr = parameters[1] as MemberReference;
+                if (mr != null)
+                {
+                    return WindowTile + ": " + mr.FullName;
+                }
+            }
+            return base.GetWindowTitle(parameters);
+        }
+
         protected override void SetParameters(object[] args)
         {
             this.Presenter.UpdateReferences(args[0].ToString(), args[1] as MemberReference);
